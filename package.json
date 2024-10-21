@@ -2,7 +2,7 @@
   "name": "tellmewow-solitaire",
   "private": true,
   "version": "0.0.0",
-  "description": "Solitaire proof of concept, game adaptation for web environment. Developed for Tellmewow",
+  "description": "Solitaire proof of concept, game adaptation for web environment. Developed for Tellmewow.",
   "author": "Jesús Pérez de Miguel <jesusperezdemiguel@gmail.com>",
   "scripts": {
     "dev": "vite",

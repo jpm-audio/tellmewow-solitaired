@@ -13,8 +13,26 @@ body {
 }
 
 .game_container {
+  position: relative;
   background-color: #245324;
   min-height: 100vh;
   width: 100vw;
   background-image: url(/assets/images/classy-fabric_opt.png);
+}
+
+#canvas_container {
+  top: 50px;
+  left: 0;
+  position: fixed;
+  height: calc(100vh - 100px);
+  width: 100%;
+}
+
+#ui_container {
+  top: 0;
+  left: 0;
+  position: fixed;
+  height: 100vh;
+  width: 100%;
+  pointer-events: none;
 }
