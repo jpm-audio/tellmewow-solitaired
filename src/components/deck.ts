@@ -39,6 +39,12 @@ class Deck extends Container {
     return card;
   }
 
+  topCard(): Card | null {
+    return this._cardsContainer.children[
+      this._cardsContainer.children.length - 1
+    ] as Card;
+  }
+
   getNextCardCoordinates(offset: number = 0): Point {
     return new Point(
       (this.numCards + offset) * this.ADD_CARD_OFFSET.x,

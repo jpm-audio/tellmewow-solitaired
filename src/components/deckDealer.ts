@@ -2,26 +2,65 @@ import { Container, Point } from 'pixi.js';
 import Deck from './deck';
 import Card from './card';
 import CardFlipAnimation from '../animations/cardFlipAnimation';
+import { Dealer, DealerSettings } from './dealer';
 
-export class DeckDealer extends Container {
+interface DeckDealerSettings extends DealerSettings {
+  dealAnimation: {
+    duration: number;
+  };
+}
+
+export class DeckDealer extends Dealer {
   protected _cardAnimation: CardFlipAnimation;
+  protected _basesLayer: Container;
   protected _cardsLayer: Container;
   protected _decksLayer: Container;
   public stock: Deck;
   public waste: Deck;
 
-  constructor(stock: Deck, waste: Deck, animationDuration: number = 1) {
+  constructor(settings: DeckDealerSettings) {
     super();
-    this.stock = stock;
-    this.waste = waste;
 
-    this._cardAnimation = new CardFlipAnimation(animationDuration);
+    // Layers
+    this._basesLayer = new Container();
     this._decksLayer = new Container();
     this._cardsLayer = new Container();
+    this.addChild(this._basesLayer);
     this.addChild(this._decksLayer);
     this.addChild(this._cardsLayer);
+
+    // Bases
+    settings.bases[0].x = settings.deck.padding + settings.deck.width / 2;
+    settings.bases[0].y = settings.deck.padding + settings.deck.height / 2;
+    this._basesLayer.addChild(settings.bases[0]);
+
+    settings.bases[1].x =
+      settings.bases[0].x + settings.deck.gap + settings.deck.width;
+    settings.bases[1].y = settings.bases[0].y;
+    this._basesLayer.addChild(settings.bases[1]);
+
+    // Stock
+    this.stock = new Deck();
+    this.stock.x = settings.bases[0].x;
+    this.stock.y = settings.bases[0].y;
     this._decksLayer.addChild(this.stock);
+
+    // Waste
+    this.waste = new Deck();
+    this.waste.x = settings.bases[1].x;
+    this.waste.y = settings.bases[1].y;
     this._decksLayer.addChild(this.waste);
+
+    // Animation
+    this._cardAnimation = new CardFlipAnimation(
+      settings.dealAnimation.duration
+    );
+
+    // Events
+    settings.bases[0].interactive = true;
+    settings.bases[0].on('pointerdown', (e) => {
+      this.emit('stock.pointerdown', this, e);
+    });
   }
 
   protected async _animateCard(card: Card, isDeal: boolean = true) {

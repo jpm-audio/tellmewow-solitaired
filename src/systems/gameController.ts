@@ -1,32 +1,30 @@
 import { Actions, CardSuitInfo, Decks } from '../constants/cards';
 import { LocalStorage } from '../utils/localStorage';
+import { interactionDefinition, VirtualPlayer } from './virtualPlayer';
 
 export interface CardLocation {
-  from: Decks;
-  fromPile: number;
-  fromPosition: number;
+  deck: Decks;
+  pile: number;
+  position: number;
 }
 
 export interface GameAction {
   action: Actions;
-  card: CardSuitInfo;
-  from: CardLocation;
-  to: CardLocation;
+  card?: CardSuitInfo;
+  from?: CardLocation;
+  to?: CardLocation;
 }
 
-export interface GameActionRegister {
-  action: Actions;
+export interface GameActionRegister extends GameAction {
   undo: boolean;
   redo: boolean;
-  card: CardSuitInfo;
-  from: CardLocation;
-  to: CardLocation;
 }
 
 export default class GameController {
   protected _storageActionsId: string = '';
   protected _actions: GameActionRegister[] = [];
   protected _storage: LocalStorage | null = null;
+  protected _virtualPlayer: VirtualPlayer | null = null;
 
   public get numTotalActions() {
     return this._actions.length;
@@ -37,6 +35,9 @@ export default class GameController {
   }
 
   constructor(storageActionsId: string = '') {
+    // Virtual Player
+    this._virtualPlayer = new VirtualPlayer();
+
     // Set Storage for actions
     this._storageActionsId = storageActionsId;
     if (this._storageActionsId !== '') {
@@ -56,7 +57,7 @@ export default class GameController {
   public init(): GameController {
     // Check for stored actions
     if (this._storage !== null) {
-      this._actions = this._storage.get();
+      this._actions = this._storage.get() || [];
     }
 
     // Check for stored Game State
@@ -65,7 +66,13 @@ export default class GameController {
     return this;
   }
 
-  public action(actionInfo: GameAction): GameController {
+  public subscribeAction(interaction: interactionDefinition) {
+    this._virtualPlayer?.addInteraction(interaction);
+  }
+
+  public async do(actionInfo: GameAction): Promise<GameController> {
+    await this._virtualPlayer?.interact(actionInfo);
+    console.log(this._actions);
     this._actions.push({ ...actionInfo, undo: false, redo: false });
     this._save();
 

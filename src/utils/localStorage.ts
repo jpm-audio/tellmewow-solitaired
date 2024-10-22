@@ -7,7 +7,7 @@ export class LocalStorage {
 
   public get() {
     const dataString = localStorage.getItem(this._itemId);
-    return dataString !== null ? JSON.parse(dataString) : {};
+    return dataString !== null ? JSON.parse(dataString) : null;
   }
 
   public set(data: string | number | [] | object) {
