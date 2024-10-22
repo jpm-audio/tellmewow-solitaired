@@ -2,6 +2,8 @@ import { Application, Container, Sprite, Texture } from 'pixi.js';
 import Card from '../components/card';
 import CARD_SUITS from '../constants/cards';
 import Deck from '../components/deck';
+import GameController from '../systems/gameController';
+import { DeckDealer } from '../components/deckDealer';
 
 interface GameDecks {
   stock: Deck;
@@ -16,15 +18,17 @@ export class SolitaireScene extends Container {
     backTexture: 'back_red.png',
     baseTexture: 'card_base-2.png',
     baseLogoTexture: 'logo-black.png',
-    frameHeight: 1194,
-    cardHeight: 367,
-    cardsGap: 4,
-    tableuDecksOffset: 65,
+    frame: { width: 1850, height: 1150 },
+    card: { width: 254, height: 367 },
+    decksGap: 4,
+    decksOffset: { tableu: { x: 0, y: 65 } },
     cardScale: 1,
     fundations: 4,
     tableuCols: 7,
   };
+  private _gameController: GameController | null = null;
   private _cards: Card[] = [];
+  private _deckDealer: DeckDealer | null = null;
   private _decks: GameDecks = {
     stock: new Deck(),
     waste: new Deck(),
@@ -41,13 +45,29 @@ export class SolitaireScene extends Container {
     this._isInitialized = true;
 
     this._config.cardScale =
-      this._config.cardHeight / Texture.from(this._config.backTexture).height;
+      this._config.card.height / Texture.from(this._config.backTexture).height;
 
     this._createCards();
     this._createDecks();
 
-    this._decks.stock.addCard(this._cards[0], 'back');
-    //this._decks.waste.addCard(this._cards[1]);
+    this._gameController = new GameController('moves');
+
+    if (this._deckDealer) {
+      this._decks.stock.interactive = true;
+      this._decks.stock.on(
+        'pointerdown',
+        this._deckDealer.deal.bind(this._deckDealer)
+      );
+
+      this._deckDealer.addCards([
+        this._cards[0],
+        this._cards[1],
+        this._cards[30],
+        this._cards[31],
+        this._cards[32],
+      ]);
+    }
+
     this._decks.tableu[0].addCard(this._cards[2]);
     this._decks.tableu[1].addCard(this._cards[3], 'back');
     this._decks.tableu[1].addCard(this._cards[4]);
@@ -76,10 +96,6 @@ export class SolitaireScene extends Container {
     this._decks.tableu[6].addCard(this._cards[27], 'back');
     this._decks.tableu[6].addCard(this._cards[28], 'back');
     this._decks.tableu[6].addCard(this._cards[29]);
-    //this._decks.fundations[0].addCard(this._cards[30]);
-    //this._decks.fundations[1].addCard(this._cards[31]);
-    //this._decks.fundations[2].addCard(this._cards[32]);
-    //this._decks.fundations[3].addCard(this._cards[33]);
   }
 
   private _createCards() {
@@ -97,7 +113,7 @@ export class SolitaireScene extends Container {
   }
 
   private _createDecks() {
-    const gap = this._config.cardsGap * this._config.cardScale;
+    const gap = this._config.decksGap;
     const cardWidth = this._cards[0].width;
     const cardHeight = this._cards[0].height;
 
@@ -105,7 +121,6 @@ export class SolitaireScene extends Container {
     this._decks.stock = new Deck();
     this._decks.stock.x = gap + cardWidth / 2;
     this._decks.stock.y = gap + cardHeight / 2;
-    this.addChild(this._decks.stock);
 
     // Waste
     const base = Sprite.from(this._config.baseTexture);
@@ -113,12 +128,18 @@ export class SolitaireScene extends Container {
     this._decks.waste = new Deck();
     this._decks.waste.x = this._decks.stock.x + gap + cardWidth;
     this._decks.waste.y = this._decks.stock.y;
-    this.addChild(this._decks.waste);
     base.height = this._cards[0].height;
     base.width = this._cards[0].width;
     base.anchor.set(0.5);
     base.x = this._decks.waste.x;
     base.y = this._decks.waste.y;
+
+    this._deckDealer = new DeckDealer(
+      this._decks.stock,
+      this._decks.waste,
+      0.15
+    );
+    this.addChild(this._deckDealer);
 
     // Fundations
     for (let i = 0; i < this._config.fundations; i++) {
@@ -144,23 +165,26 @@ export class SolitaireScene extends Container {
     }
 
     // Tableu
-    const offsetY = this._config.tableuDecksOffset * this._config.cardScale;
     const deckY = this._decks.stock.y + gap + cardHeight;
+
     for (let i = 0; i < this._config.tableuCols; i++) {
-      const deck = new Deck({ x: 0, y: offsetY });
+      const deck = new Deck(this._config.decksOffset.tableu);
       this._decks.tableu.push(deck);
       this._decks.tableu[i].x = this._decks.stock.x + i * (gap + cardWidth);
       this._decks.tableu[i].y = deckY;
       this.addChild(deck);
     }
+
+    // Dynamic Frame Height Calculation
+    //this._config.frame.height = this._;
   }
 
   public updateSize(app: Application) {
     if (!this._isInitialized) return;
 
-    const scale = app.canvas.height / this._config.frameHeight;
-    this.scale.set(scale);
-
-    console.log(app.canvas.height);
+    // Scale the whole container to FIT into the config frame
+    const scaleH = app.canvas.height / this._config.frame.height;
+    const scaleW = app.canvas.width / this._config.frame.width;
+    this.scale.set(Math.min(scaleH, scaleW));
   }
 }

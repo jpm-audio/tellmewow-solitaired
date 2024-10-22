@@ -1,4 +1,6 @@
 export type CardSuit = 'club' | 'diamond' | 'heart' | 'spade';
+export type Decks = 'pile' | 'waste' | 'foundation' | 'tableu';
+export type Actions = 'deal' | 'move';
 
 export type CardSuitInfo = {
   id: CardSuit;

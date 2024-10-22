@@ -3,15 +3,10 @@ import Card from './card';
 
 class Deck extends Container {
   public ADD_CARD_OFFSET = { x: -1, y: -2 };
-  public COUNTER_GAP = 20;
   private _cardsContainer: Container;
 
   public get numCards() {
     return this._cardsContainer.children.length;
-  }
-
-  public set counterGap(value: number) {
-    this.COUNTER_GAP = value;
   }
 
   constructor(addCardOffset: PointData = { x: 0, y: 0 }) {
@@ -52,7 +47,13 @@ class Deck extends Container {
   }
 
   reset() {
+    const children: Card[] = [];
+    this._cardsContainer.children.forEach((child) => {
+      children.push(child as Card);
+    });
     this._cardsContainer.removeChildren();
+
+    return children;
   }
 }
 
