@@ -52,4 +52,10 @@ export class FoundationsDealer extends Dealer {
     }
     return null;
   }
+
+  public reset() {
+    this._decksLayer.children.forEach((deck) => {
+      (deck as Deck).reset();
+    });
+  }
 }

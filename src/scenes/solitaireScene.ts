@@ -1,16 +1,17 @@
-import { Application, Container, Sprite, Texture } from 'pixi.js';
-import Card from '../components/card';
+import { Application, Container, Sprite, Texture, Text } from 'pixi.js';
 import CARD_SUITS, { Actions, Decks } from '../constants/cards';
 import GameController, { GameAction } from '../systems/gameController';
 import { DeckDealer } from '../components/deckDealer';
 import { FoundationsDealer } from '../components/foundationsDealer';
 import { TableuDealer } from '../components/tableuDealer';
+import { CardsDealer } from '../systems/cardsDealer';
 
 export class SolitaireScene extends Container {
   protected _isInitialized: boolean = false;
   private _config = {
     backTexture: 'back_red.png',
     baseTexture: 'card_base-2.png',
+    redoTexture: 'redo.png',
     baseLogoTexture: 'logo-black.png',
     frame: { width: 1850, height: 1150 },
     card: { width: 254, height: 367 },
@@ -21,7 +22,7 @@ export class SolitaireScene extends Container {
     tableuCols: 7,
   };
   private _gameController: GameController | null = null;
-  private _cards: Card[] = [];
+  private _cardsDealer: CardsDealer | null = null;
   private _deckDealer: DeckDealer | null = null;
   private _foundationsDealer: FoundationsDealer | null = null;
   private _tableuDealer: TableuDealer | null = null;
@@ -38,7 +39,10 @@ export class SolitaireScene extends Container {
       this._config.card.height / Texture.from(this._config.backTexture).height;
 
     // CARDS
-    this._createCards();
+    this._cardsDealer = new CardsDealer();
+    this._cardsDealer.init(CARD_SUITS, (card) => {
+      card.scale.set(this._config.cardScale);
+    });
 
     // DECK DEALERS
     this._createDecks();
@@ -65,6 +69,9 @@ export class SolitaireScene extends Container {
         console.log(action);
       },
     });
+    this._gameController.on('reset', () => {
+      this.shuffle();
+    });
 
     // EVENTS EXECUTION
     this._deckDealer?.on('stock.pointerdown', (deckDealer) => {
@@ -90,35 +97,20 @@ export class SolitaireScene extends Container {
       this._gameController?.do(actionInfo);
     });
 
-    this._deckDealer?.addCards([
-      this._cards[0],
-      this._cards[1],
-      this._cards[30],
-      this._cards[31],
-      this._cards[32],
-    ]);
-  }
-
-  private _createCards() {
-    CARD_SUITS.forEach((suit) => {
-      for (let i = 1; i < suit.values + 1; i++) {
-        const card = new Card(
-          { suit: suit.id, value: i },
-          'back_red.png',
-          `${suit.id}_${i}.png`
-        );
-        card.scale.set(this._config.cardScale);
-        this._cards.push(card);
-      }
-    });
+    // TODO - Remove this
+    this._gameController.reset();
   }
 
   private _getDeckBase(variant: number = 0) {
+    const aCard = this._cardsDealer?.getCardByIndex(0);
+    const cardHeight = aCard?.height || 100;
+    const cardWidth = aCard?.width || 100;
+
     if (variant === 1) {
       const base = new Container();
       const base1 = Sprite.from(this._config.baseTexture);
-      base1.height = this._cards[0].height;
-      base1.width = this._cards[0].width;
+      base1.height = cardHeight;
+      base1.width = cardWidth;
       base1.anchor.set(0.5);
       base.addChild(base1);
 
@@ -130,17 +122,46 @@ export class SolitaireScene extends Container {
       return base;
     }
 
+    if (variant === 2) {
+      const base = new Container();
+      const base1 = Sprite.from(this._config.baseTexture);
+      base1.height = cardHeight;
+      base1.width = cardWidth;
+      base1.anchor.set(0.5);
+      base.addChild(base1);
+
+      const baseRedo = Sprite.from(this._config.redoTexture);
+      baseRedo.scale.set(this._config.cardScale);
+      baseRedo.anchor.set(0.5, 0.75);
+      base.addChild(baseRedo);
+
+      const text = new Text({
+        text: 'REDEAL',
+        style: {
+          fontFamily: 'Arial',
+          fontSize: 32,
+        },
+      });
+      text.alpha = 0.5;
+      text.anchor.set(0.5);
+      text.y = 50;
+      base.addChild(text);
+
+      return base;
+    }
+
     const base = Sprite.from(this._config.baseTexture);
-    base.height = this._cards[0].height;
-    base.width = this._cards[0].width;
+    base.height = cardHeight;
+    base.width = cardWidth;
     base.anchor.set(0.5);
     return base;
   }
 
   private _createDecks() {
     const gap = this._config.decksGap;
-    const cardWidth = this._cards[0].width;
-    const cardHeight = this._cards[0].height;
+    const aCard = this._cardsDealer?.getCardByIndex(0);
+    const cardHeight = aCard?.height || 100;
+    const cardWidth = aCard?.width || 100;
 
     // Deck Dealer
     this._deckDealer = new DeckDealer({
@@ -154,7 +175,7 @@ export class SolitaireScene extends Container {
         width: cardWidth,
         height: cardHeight,
       },
-      bases: [this._getDeckBase(), this._getDeckBase()],
+      bases: [this._getDeckBase(2), this._getDeckBase()],
     });
     this.addChild(this._deckDealer);
 
@@ -191,6 +212,26 @@ export class SolitaireScene extends Container {
     });
     this._tableuDealer.y = gap + cardHeight;
     this.addChild(this._tableuDealer);
+  }
+
+  public shuffle() {
+    if (!this._isInitialized) return;
+
+    this._cardsDealer?.shuffle();
+    this._deckDealer?.reset();
+    this._foundationsDealer?.reset();
+    this._tableuDealer?.reset();
+
+    // Deal the cards
+    if (this._cardsDealer) {
+      for (let i = 0; i < this._config.tableuCols; i++) {
+        const cards = this._cardsDealer?.getHandCards(i + 1);
+        this._tableuDealer?.initDeck(cards, i);
+      }
+      const stock = this._cardsDealer?.getStock();
+
+      this._deckDealer?.addCards(stock);
+    }
   }
 
   public updateSize(app: Application) {

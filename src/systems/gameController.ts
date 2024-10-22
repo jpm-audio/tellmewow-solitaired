@@ -1,3 +1,4 @@
+import { EventEmitter } from 'pixi.js';
 import { Actions, CardSuitInfo, Decks } from '../constants/cards';
 import { LocalStorage } from '../utils/localStorage';
 import { interactionDefinition, VirtualPlayer } from './virtualPlayer';
@@ -20,7 +21,7 @@ export interface GameActionRegister extends GameAction {
   redo: boolean;
 }
 
-export default class GameController {
+export default class GameController extends EventEmitter {
   protected _storageActionsId: string = '';
   protected _actions: GameActionRegister[] = [];
   protected _storage: LocalStorage | null = null;
@@ -35,6 +36,8 @@ export default class GameController {
   }
 
   constructor(storageActionsId: string = '') {
+    super();
+
     // Virtual Player
     this._virtualPlayer = new VirtualPlayer();
 
@@ -94,5 +97,11 @@ export default class GameController {
     this._save();
 
     return this;
+  }
+
+  public reset() {
+    this._actions = [];
+    this._save();
+    this.emit('reset');
   }
 }

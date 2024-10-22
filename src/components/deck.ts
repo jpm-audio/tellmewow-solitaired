@@ -25,18 +25,23 @@ class Deck extends Container {
     return this.height + this.numCards * Math.abs(this.ADD_CARD_OFFSET.y);
   }
 
-  addCard(card: Card, way: 'front' | 'back' = 'front') {
+  addCard(card: Card, way?: 'front' | 'back') {
     card.x = this.numCards * this.ADD_CARD_OFFSET.x;
     card.y = this.numCards * this.ADD_CARD_OFFSET.y;
-    card.set(way);
+    if (way) {
+      card.set(way);
+    }
     this._cardsContainer.addChild(card);
   }
 
   getCard(index: number = this.numCards - 1): Card | null {
     if (this.numCards === 0) return null;
-
     const card = this._cardsContainer.removeChildAt<Card>(index);
     return card;
+  }
+
+  seeCards() {
+    return this._cardsContainer.children as Card[];
   }
 
   topCard(): Card | null {
@@ -55,7 +60,7 @@ class Deck extends Container {
   reset() {
     const children: Card[] = [];
     this._cardsContainer.children.forEach((child) => {
-      children.push(child as Card);
+      children.unshift(child as Card);
     });
     this._cardsContainer.removeChildren();
 

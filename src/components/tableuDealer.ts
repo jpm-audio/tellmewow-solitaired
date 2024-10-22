@@ -26,9 +26,16 @@ export class TableuDealer extends Dealer {
     }
   }
 
+  public initDeck(cards: Card[], deckIndex: number) {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+    cards.forEach((card, index) => {
+      deck.addCard(card, index !== cards.length - 1 ? 'back' : 'front');
+    });
+  }
+
   public addCards(cards: Card[], deckIndex: number) {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
     cards.forEach((card) => {
-      const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
       deck.addCard(card);
     });
   }
@@ -40,5 +47,11 @@ export class TableuDealer extends Dealer {
       return deck.getCard(positionIndex);
     }
     return null;
+  }
+
+  public reset() {
+    this._decksLayer.children.forEach((deck) => {
+      (deck as Deck).reset();
+    });
   }
 }

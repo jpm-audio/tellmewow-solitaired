@@ -1,7 +1,7 @@
 import { Container, Sprite, Texture } from 'pixi.js';
 import { CardSuit } from '../constants/cards';
 
-type CardInfo = {
+export type CardInfo = {
   suit: CardSuit;
   value: number;
 };

@@ -2,7 +2,7 @@
 
 "back_red.png":
 {
-	"frame": {"x":452,"y":1,"w":200,"h":288},
+	"frame": {"x":537,"y":1,"w":200,"h":288},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":200,"h":288},
@@ -10,7 +10,7 @@
 },
 "card_base-2.png":
 {
-	"frame": {"x":205,"y":1,"w":169,"h":245},
+	"frame": {"x":290,"y":1,"w":169,"h":245},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":169,"h":245},
@@ -18,7 +18,7 @@
 },
 "club_1.png":
 {
-	"frame": {"x":742,"y":1,"w":201,"h":290},
+	"frame": {"x":827,"y":1,"w":201,"h":290},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":201,"h":290},
@@ -26,7 +26,7 @@
 },
 "club_2.png":
 {
-	"frame": {"x":1034,"y":1,"w":201,"h":290},
+	"frame": {"x":1119,"y":1,"w":201,"h":290},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":201,"h":290},
@@ -34,7 +34,7 @@
 },
 "club_3.png":
 {
-	"frame": {"x":1326,"y":1,"w":201,"h":290},
+	"frame": {"x":1411,"y":1,"w":201,"h":290},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":201,"h":290},
@@ -42,7 +42,7 @@
 },
 "club_4.png":
 {
-	"frame": {"x":1618,"y":1,"w":201,"h":290},
+	"frame": {"x":1703,"y":1,"w":201,"h":290},
 	"rotated": true,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":201,"h":290},
@@ -330,11 +330,19 @@
 },
 "logo-black.png":
 {
-	"frame": {"x":1,"y":1,"w":202,"h":130},
+	"frame": {"x":86,"y":1,"w":202,"h":130},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":0,"y":22,"w":202,"h":130},
 	"sourceSize": {"w":202,"h":202}
+},
+"redo.png":
+{
+	"frame": {"x":1,"y":1,"w":83,"h":77},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":21,"y":24,"w":83,"h":77},
+	"sourceSize": {"w":120,"h":120}
 },
 "spade_1.png":
 {
@@ -453,6 +461,6 @@
 	"format": "RGBA8888",
 	"size": {"w":2044,"h":1624},
 	"scale": "0.5",
-	"smartupdate": "$TexturePacker:SmartUpdate:bf0aabc9fdad9fb0d5b0e689b73b2fde:5715e92b7dd26b236d1d0285f8ad83e1:7485fde609eb6b536e3b8e5fe6954996$"
+	"smartupdate": "$TexturePacker:SmartUpdate:0c47f125d36d4d558322fc260f8d407f:6a668d85d4b479f5ed8f39bc7bb51e05:7485fde609eb6b536e3b8e5fe6954996$"
 }
 }

@@ -127,6 +127,14 @@
 	"trimmed": true,
 	"spriteSourceSize": {"x":0,"y":45,"w":403,"h":257},
 	"sourceSize": {"w":403,"h":403}
+},
+"redo.png":
+{
+	"frame": {"x":404,"y":404,"w":162,"h":152},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":44,"y":49,"w":162,"h":152},
+	"sourceSize": {"w":240,"h":240}
 }},
 "animations": {
 	"club": ["club_1.png","club_2.png","club_3.png","club_4.png","club_5.png","club_6.png","club_7.png","club_8.png","club_9.png","club_10.png","club_11.png","club_12.png","club_13.png"],
@@ -142,6 +150,6 @@
 	"size": {"w":1970,"h":2002},
 	"scale": "1",
 	"related_multi_packs": [ "main-1.json", "main-2.json", "main-3.json" ],
-	"smartupdate": "$TexturePacker:SmartUpdate:bf0aabc9fdad9fb0d5b0e689b73b2fde:5715e92b7dd26b236d1d0285f8ad83e1:7485fde609eb6b536e3b8e5fe6954996$"
+	"smartupdate": "$TexturePacker:SmartUpdate:0c47f125d36d4d558322fc260f8d407f:6a668d85d4b479f5ed8f39bc7bb51e05:7485fde609eb6b536e3b8e5fe6954996$"
 }
 }

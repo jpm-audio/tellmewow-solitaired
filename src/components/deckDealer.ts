@@ -72,19 +72,19 @@ export class DeckDealer extends Dealer {
     card.x = deckFrom.x + deck1Coords.x;
     card.y = deckFrom.y + deck1Coords.y;
 
+    this._cardsLayer.addChildAt(card, 0);
+
     this._cardAnimation.scale = { x: 0, y: card.scale.y };
-    this._cardAnimation.addPlay(
+    await this._cardAnimation.addPlay(
       card,
       new Point(deckFrom.x + deck1Coords.x, deckFrom.y + deck1Coords.y),
       new Point(deckTo.x + deck2Coords.x, deckTo.y + deck2Coords.y),
       () => card.flip(),
       () => {
         this._cardsLayer.removeChild(card);
-        deckTo.addCard(card);
+        deckTo.addCard(card, isDeal ? 'front' : 'back');
       }
     );
-
-    this._cardsLayer.addChildAt(card, 0);
   }
 
   public addCards(cards: Card[]) {
@@ -113,8 +113,23 @@ export class DeckDealer extends Dealer {
     await this._animateCard(card, false);
 
     cards.forEach((card) => {
-      this._cardsLayer.addChild(card);
+      this.stock.addCard(card, 'back');
     });
+  }
+
+  public async unredeal() {
+    if (this.stock.numCards === 0) return;
+
+    const cards = this.stock.reset();
+    const lastCard = cards.pop() as Card;
+
+    await this._animateCard(lastCard, true);
+
+    cards.forEach((card) => {
+      this.waste.addCard(card, 'front');
+      console.log(card.info.suit + ' - ' + card.info.value);
+    });
+    this.waste.addCard(lastCard, 'front');
   }
 
   public reset() {
