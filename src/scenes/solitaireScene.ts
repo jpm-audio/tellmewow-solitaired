@@ -1,23 +1,36 @@
-import { Application, Container, Sprite, Texture, Text } from 'pixi.js';
+import {
+  Application,
+  Container,
+  FederatedPointerEvent,
+  Point,
+  PointData,
+  Sprite,
+  Text,
+} from 'pixi.js';
 import CARD_SUITS from '../constants/cards';
 import { DeckDealer } from '../components/deckDealer';
 import { FoundationsDealer } from '../components/foundationsDealer';
 import { TableuDealer } from '../components/tableuDealer';
 import { CardsDealer } from '../systems/cardsDealer';
 import { GameController } from '../systems/gameController';
+import Card from '../components/card';
 
 export class SolitaireScene extends Container {
   protected _isInitialized: boolean = false;
+  protected _isDragging: boolean = false;
+  protected _dragClientOrigin: Point = new Point();
+  protected _dragCardOrigin: Point = new Point();
+  protected _draggedCard: Card | null = null;
+  protected _draggingBackground: Sprite | null = null;
   private _config = {
     backTexture: 'back_red.png',
     baseTexture: 'card_base-2.png',
     redoTexture: 'redo.png',
     baseLogoTexture: 'logo-black.png',
-    frame: { width: 1850, height: 1150 },
-    card: { width: 254, height: 367 },
-    decksGap: 4,
-    decksOffset: { tableu: { x: 0, y: 65 } },
-    cardScale: 1,
+    frame: { width: 2904, height: 1805 },
+    card: { width: 254, height: 576 },
+    decksGap: 6,
+    decksOffset: { tableu: { x: 0, y: 102 } },
     fundations: 4,
     tableuCols: 7,
   };
@@ -35,19 +48,27 @@ export class SolitaireScene extends Container {
     if (this._isInitialized) return;
     this._isInitialized = true;
 
-    this._gameController = gameController;
+    this._draggingBackground = Sprite.from(this._config.baseTexture);
+    this._draggingBackground.alpha = 0;
+    this._draggingBackground.width = this._config.frame.width;
+    this._draggingBackground.height = this._config.frame.height;
+    this.addChild(this._draggingBackground);
 
-    this._config.cardScale =
-      this._config.card.height / Texture.from(this._config.backTexture).height;
+    this._gameController = gameController;
 
     // CARDS
     this.cardsDealer = new CardsDealer();
-    this.cardsDealer.init(CARD_SUITS, (card) => {
-      card.scale.set(this._config.cardScale);
-    });
+    this.cardsDealer.init(CARD_SUITS);
 
     // DECK DEALERS
     this._createDecks();
+
+    this.onpointerdown = this.onDragStart.bind(this);
+    this.onpointermove = this.onDragMove.bind(this);
+    this.onpointerup = this.onDragEnd.bind(this);
+    this.onpointercancel = this.onDragCancel.bind(this);
+    window.addEventListener('mouseout', this.onDragCancel.bind(this));
+    this.eventMode = 'static';
   }
 
   private _getDeckBase(variant: number = 0) {
@@ -64,7 +85,7 @@ export class SolitaireScene extends Container {
       base.addChild(base1);
 
       const baseLogo = Sprite.from(this._config.baseLogoTexture);
-      baseLogo.scale.set(this._config.cardScale * 0.75);
+      baseLogo.scale.set(0.75);
       baseLogo.anchor.set(0.5);
       base.addChild(baseLogo);
 
@@ -80,7 +101,6 @@ export class SolitaireScene extends Container {
       base.addChild(base1);
 
       const baseRedo = Sprite.from(this._config.redoTexture);
-      baseRedo.scale.set(this._config.cardScale);
       baseRedo.anchor.set(0.5, 0.75);
       base.addChild(baseRedo);
 
@@ -126,7 +146,6 @@ export class SolitaireScene extends Container {
       },
       bases: [this._getDeckBase(2), this._getDeckBase()],
     });
-    this.addChild(this.deckDealer);
 
     // Foundations Dealer
     this.foundationsDealer = new FoundationsDealer({
@@ -145,7 +164,6 @@ export class SolitaireScene extends Container {
       ],
     });
     this.foundationsDealer.x = 3 * cardWidth + 3 * gap;
-    this.addChild(this.foundationsDealer);
 
     // Tableu Dealer
     this.tableuDealer = new TableuDealer({
@@ -160,7 +178,100 @@ export class SolitaireScene extends Container {
       bases: [],
     });
     this.tableuDealer.y = gap + cardHeight;
+
     this.addChild(this.tableuDealer);
+    this.addChild(this.foundationsDealer);
+    this.addChild(this.deckDealer);
+  }
+
+  public enable() {
+    this.eventMode = 'static';
+  }
+
+  public disable() {
+    this.eventMode = 'none';
+  }
+
+  public onDragStart(event: FederatedPointerEvent) {
+    if (event.target.constructor.name !== 'Card') return;
+
+    event.stopPropagation();
+    this._isDragging = true;
+    this._dragClientOrigin.copyFrom(event.getLocalPosition(this));
+
+    const card = event.target as Card;
+    const coords = this.cardsDealer?.getCardGlobalCoords(card) as PointData;
+    this._dragCardOrigin.copyFrom(coords);
+    if (coords) {
+      const cardLocation = card.location;
+      const deckName = cardLocation?.deck;
+      if (deckName === 'tableu') {
+        this.tableuDealer?.getDragCards(
+          cardLocation?.pile || 0,
+          cardLocation?.position
+        );
+      }
+      if (deckName === 'foundation') {
+        this.foundationsDealer?.getDragCards(
+          cardLocation?.pile || 0,
+          cardLocation?.position
+        );
+      }
+      if (deckName === 'waste') {
+        this.deckDealer?.getDragCards(
+          cardLocation?.pile || 0,
+          cardLocation?.position
+        );
+      }
+
+      //card.parent.removeChild(card);
+      this.addChild(card);
+
+      card.position.copyFrom(coords);
+      this._draggedCard = card;
+    }
+  }
+
+  public onDragMove(event: FederatedPointerEvent) {
+    if (!this._isDragging || !this._draggedCard) return;
+
+    this._draggedCard.x =
+      this._dragCardOrigin.x +
+      (event.getLocalPosition(this).x - this._dragClientOrigin.x);
+    this._draggedCard.y =
+      this._dragCardOrigin.y +
+      (event.getLocalPosition(this).y - this._dragClientOrigin.y);
+  }
+
+  public onDragEnd(event?: FederatedPointerEvent) {
+    if (!this._isDragging || !this._draggedCard) return;
+
+    if (event) {
+      this.onDragMove(event);
+    }
+
+    const cardLocation = this._draggedCard.location;
+    const deckName = cardLocation?.deck;
+    if (deckName === 'tableu') {
+      this.tableuDealer?.addCards([this._draggedCard], cardLocation?.pile || 0);
+    }
+    if (deckName === 'foundation') {
+      this.foundationsDealer?.addCards(
+        [this._draggedCard],
+        cardLocation?.pile || 0
+      );
+    }
+    if (deckName === 'waste') {
+      this.deckDealer?.addCards([this._draggedCard], 1);
+    }
+
+    this._isDragging = false;
+    this._draggedCard = null;
+  }
+
+  public onDragCancel() {
+    console.log('Scene Cancel');
+    this.onDragEnd();
   }
 
   public shuffle() {

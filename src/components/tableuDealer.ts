@@ -29,6 +29,13 @@ export class TableuDealer extends Dealer {
   public initDeck(cards: Card[], deckIndex: number) {
     const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
     cards.forEach((card, index) => {
+      // Write card location
+      card.location = {
+        deck: 'tableu',
+        pile: deckIndex,
+        position: index,
+      };
+      // Add Card into deck
       deck.addCard(card, index !== cards.length - 1 ? 'back' : 'front');
     });
   }
@@ -47,6 +54,24 @@ export class TableuDealer extends Dealer {
       return deck.getCard(positionIndex);
     }
     return null;
+  }
+
+  public getDragCards(
+    deckIndex: number,
+    positionIndex: number = 0
+  ): Card[] | [] {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+
+    if (deck && deck.numCards > positionIndex) {
+      const card = deck.getCard(positionIndex);
+      return card ? [card] : [];
+    }
+    return [];
+  }
+
+  public getPile(deckIndex: number): Deck {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+    return deck;
   }
 
   public reset() {

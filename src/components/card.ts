@@ -1,5 +1,6 @@
 import { Container, Sprite, Texture } from 'pixi.js';
 import { CardSuit } from '../constants/cards';
+import { CardLocation } from '../systems/actionsHandler';
 
 export type CardInfo = {
   suit: CardSuit;
@@ -10,6 +11,7 @@ class Card extends Container {
   protected _info: CardInfo;
   protected _back: Sprite;
   protected _front: Sprite;
+  public location: CardLocation | null = null;
 
   public get info() {
     return this._info;
@@ -34,17 +36,25 @@ class Card extends Container {
     this.addChild(this._back);
 
     this.reset(frontVisible);
+
+    this.on('dragStart', (event) => this.emit('cardDragStart', this, event));
+    this.on('dragEnd', () => this.emit('cardDragEnd', this));
   }
 
   flip() {
-    this._back.visible = !this._back.visible;
-    this._front.visible = !this._front.visible;
+    if (this._back.visible) {
+      this.set('front');
+    } else {
+      this.set('back');
+    }
   }
 
   set(way: 'front' | 'back') {
     const isFront = way === 'front';
     this._back.visible = !isFront;
     this._front.visible = isFront;
+    this.eventMode = isFront ? 'dynamic' : 'none';
+    this.cursor = isFront ? 'pointer' : 'default';
   }
 
   reset(frontVisible: boolean = false) {
@@ -54,6 +64,17 @@ class Card extends Container {
     this.y = 0;
     this.scale.set(1);
     this.skew.set(0);
+  }
+
+  disable() {
+    this.eventMode = 'none';
+    this.cursor = 'default';
+  }
+
+  enable() {
+    const isFront = this._front.visible;
+    this.eventMode = isFront ? 'dynamic' : 'none';
+    this.cursor = isFront ? 'pointer' : 'default';
   }
 }
 

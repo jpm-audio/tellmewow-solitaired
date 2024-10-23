@@ -57,7 +57,8 @@ export class DeckDealer extends Dealer {
     );
 
     // Events
-    settings.bases[0].interactive = true;
+    settings.bases[0].eventMode = 'static';
+    settings.bases[0].cursor = 'pointer';
     settings.bases[0].on('pointerdown', (e) => {
       this.emit('stock.pointerdown', this, e);
     });
@@ -87,10 +88,32 @@ export class DeckDealer extends Dealer {
     );
   }
 
-  public addCards(cards: Card[]) {
-    cards.forEach((card) => {
-      this.stock.addCard(card, 'back');
+  public addCards(cards: Card[], deckIndex: number = 0) {
+    cards.forEach((card, index) => {
+      card.location = {
+        deck: 'waste',
+        pile: 1,
+        position: index,
+      };
+      if (deckIndex === 0) {
+        this.stock.addCard(card, 'back');
+      } else {
+        this.waste.addCard(card, 'front');
+      }
     });
+  }
+
+  public getDragCards(
+    deckIndex: number,
+    positionIndex: number = 0
+  ): Card[] | [] {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+
+    if (deck && deck.numCards > positionIndex) {
+      const card = deck.getCard(positionIndex);
+      return card ? [card] : [];
+    }
+    return [];
   }
 
   public async deal() {

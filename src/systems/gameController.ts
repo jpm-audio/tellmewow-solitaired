@@ -137,5 +137,6 @@ export class GameController extends EventEmitter {
 
     // Enable the Game
     this._htmlUIController?.enable();
+    this._scene?.enable();
   }
 }

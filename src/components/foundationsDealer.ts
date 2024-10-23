@@ -38,7 +38,12 @@ export class FoundationsDealer extends Dealer {
   }
 
   public addCards(cards: Card[], deckIndex: number) {
-    cards.forEach((card) => {
+    cards.forEach((card, index) => {
+      card.location = {
+        deck: 'foundation',
+        pile: deckIndex,
+        position: index,
+      };
       const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
       deck.addCard(card);
     });
@@ -51,6 +56,24 @@ export class FoundationsDealer extends Dealer {
       return deck.getCard(positionIndex);
     }
     return null;
+  }
+
+  public getDragCards(
+    deckIndex: number,
+    positionIndex: number = 0
+  ): Card[] | [] {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+
+    if (deck && deck.numCards > positionIndex) {
+      const card = deck.getCard(positionIndex);
+      return card ? [card] : [];
+    }
+    return [];
+  }
+
+  public getPile(deckIndex: number): Deck {
+    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+    return deck;
   }
 
   public reset() {

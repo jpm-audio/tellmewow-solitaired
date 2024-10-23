@@ -1,7 +1,8 @@
+import { Container, EventEmitter, Point, PointData } from 'pixi.js';
 import Card, { CardInfo } from '../components/card';
 import { CardSuitInfo } from '../constants/cards';
 
-export class CardsDealer {
+export class CardsDealer extends EventEmitter {
   private _cards: Card[] = [];
   private _hand: number[] = [];
 
@@ -24,6 +25,19 @@ export class CardsDealer {
         this._cards.push(card);
       }
     });
+  }
+
+  public getCardGlobalCoords(card: Card): PointData {
+    const coords = new Point();
+    let container: Container = card;
+
+    while (container !== null) {
+      coords.x += container.x;
+      coords.y += container.y;
+      container = container.parent;
+    }
+
+    return coords;
   }
 
   public getCardByIndex(index: number = 0): Card | null {
