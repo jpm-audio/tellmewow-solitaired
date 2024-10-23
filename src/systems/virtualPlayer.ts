@@ -1,4 +1,4 @@
-import { GameAction } from './gameController';
+import { GameAction } from './actionsHandler';
 
 export interface interactionDefinition {
   id: string;

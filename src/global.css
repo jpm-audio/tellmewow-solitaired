@@ -133,7 +133,7 @@ footer {
   font-size: 18px;
 }
 
-#timer-button {
+.timer-button {
   background-color: rgba(0, 0, 0, 0.2);
   color: white;
   font-size: 1em;
@@ -144,6 +144,14 @@ footer {
   display: inline-block;
   text-align: center;
   cursor: pointer;
+}
+
+#button-start-timer.timer-button {
+  background-color: #00a6ed;
+}
+
+#button-start-timer.timer-button:disabled {
+  background-color: #939393;
 }
 
 .info-box-item.metrics {

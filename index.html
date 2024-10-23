@@ -12,30 +12,50 @@
       <div id="ui_container">
         <header>
           <div class="header-logo"><h1>Solitaire</h1></div>
-          <button class="btn primary">New Game</button>
-          <button class="btn primary">Settings</button>
-          <button class="btn secondary">Undo</button>
+          <button id="button-new-game" class="btn primary">New Game</button>
+          <button id="button-mute-audio" class="btn primary">Mute</button>
+          <button id="button-undo" class="btn secondary">Undo</button>
         </header>
         <footer>
           <div class="info-box">
             <div class="info-box-item timer">
-              <div id="timer">00:00</div>
-              <button id="timer-button">❙❙</button>
+              <div id="display-timer" class="timer">00:00</div>
+              <button id="button-start-timer" class="timer-button">▶</button>
+              <button
+                id="button-pause-timer"
+                class="timer-button"
+                style="display: none"
+              >
+                ❙❙
+              </button>
+              <button
+                id="button-unpause-timer"
+                class="timer-button"
+                style="display: none"
+              >
+                ►
+              </button>
             </div>
             <div class="info-box-item metrics">
               <div class="metric-box">
                 <div id="metric-value-moves" class="metric-box-value">0</div>
-                <div class="metric-box-label">Moves</div>
+                <div id="display-metrics-moves" class="metric-box-label">
+                  Moves
+                </div>
               </div>
               <div class="metric-box">
                 <div id="metric-value-stock" class="metric-box-value">0</div>
-                <div class="metric-box-label">Stock</div>
+                <div id="display-metrics-stock" class="metric-box-label">
+                  Stock
+                </div>
               </div>
               <div class="metric-box">
                 <div id="metric-value-passthrus" class="metric-box-value">
                   0
                 </div>
-                <div class="metric-box-label">Passthrus</div>
+                <div id="display-metrics-passthrus" class="metric-box-label">
+                  Passthrus
+                </div>
               </div>
             </div>
             <div class="info-box-item"></div>
