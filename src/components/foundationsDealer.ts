@@ -1,20 +1,13 @@
-import { Container } from 'pixi.js';
-import { Dealer, DealerSettings } from './dealer';
+import { Dealer, DealerSettings, IntersectionResult } from './dealer';
 import Deck from './deck';
+import { Decks } from '../constants/cards';
 import Card from './card';
 
 export class FoundationsDealer extends Dealer {
-  protected _basesLayer: Container;
-  protected _decksLayer: Container;
+  protected _name: Decks = 'foundation';
 
   constructor(settings: DealerSettings) {
     super();
-
-    // Layers
-    this._basesLayer = new Container();
-    this._decksLayer = new Container();
-    this.addChild(this._basesLayer);
-    this.addChild(this._decksLayer);
 
     // Fundations
     for (let i = 0; i < settings.deck.amount; i++) {
@@ -37,48 +30,15 @@ export class FoundationsDealer extends Dealer {
     }
   }
 
-  public addCards(cards: Card[], deckIndex: number) {
-    cards.forEach((card, index) => {
-      card.location = {
-        deck: 'foundation',
-        pile: deckIndex,
-        position: index,
-      };
-      const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
-      deck.addCard(card);
-    });
-  }
+  public checkIntersections(card: Card): IntersectionResult[] {
+    const intersectedCards = super.checkIntersections(card);
 
-  public getCard(deckIndex: number, positionIndex: number = 0): Card | null {
-    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
-
-    if (deck && deck.numCards > positionIndex) {
-      return deck.getCard(positionIndex);
-    }
-    return null;
-  }
-
-  public getDragCards(
-    deckIndex: number,
-    positionIndex: number = 0
-  ): Card[] | [] {
-    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
-
-    if (deck && deck.numCards > positionIndex) {
-      const card = deck.getCard(positionIndex);
-      return card ? [card] : [];
-    }
-    return [];
-  }
-
-  public getPile(deckIndex: number): Deck {
-    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
-    return deck;
-  }
-
-  public reset() {
-    this._decksLayer.children.forEach((deck) => {
-      (deck as Deck).reset();
+    // Filter for cards with +1 value and different color
+    return intersectedCards.filter((result) => {
+      return (
+        card.info.value === result.card.info.value + 1 &&
+        card.testSuit(result.card)
+      );
     });
   }
 }

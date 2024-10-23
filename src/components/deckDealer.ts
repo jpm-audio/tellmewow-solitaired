@@ -3,6 +3,7 @@ import Deck from './deck';
 import Card from './card';
 import CardFlipAnimation from '../animations/cardFlipAnimation';
 import { Dealer, DealerSettings } from './dealer';
+import { Decks } from '../constants/cards';
 
 interface DeckDealerSettings extends DealerSettings {
   dealAnimation: {
@@ -11,10 +12,9 @@ interface DeckDealerSettings extends DealerSettings {
 }
 
 export class DeckDealer extends Dealer {
+  protected _name: Decks = 'waste';
   protected _cardAnimation: CardFlipAnimation;
-  protected _basesLayer: Container;
   protected _cardsLayer: Container;
-  protected _decksLayer: Container;
   public stock: Deck;
   public waste: Deck;
 
@@ -22,11 +22,7 @@ export class DeckDealer extends Dealer {
     super();
 
     // Layers
-    this._basesLayer = new Container();
-    this._decksLayer = new Container();
     this._cardsLayer = new Container();
-    this.addChild(this._basesLayer);
-    this.addChild(this._decksLayer);
     this.addChild(this._cardsLayer);
 
     // Bases
@@ -103,19 +99,6 @@ export class DeckDealer extends Dealer {
     });
   }
 
-  public getDragCards(
-    deckIndex: number,
-    positionIndex: number = 0
-  ): Card[] | [] {
-    const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
-
-    if (deck && deck.numCards > positionIndex) {
-      const card = deck.getCard(positionIndex);
-      return card ? [card] : [];
-    }
-    return [];
-  }
-
   public async deal() {
     const card = this.stock.getCard();
     if (card === null) return;
@@ -153,10 +136,5 @@ export class DeckDealer extends Dealer {
       console.log(card.info.suit + ' - ' + card.info.value);
     });
     this.waste.addCard(lastCard, 'front');
-  }
-
-  public reset() {
-    this.stock.reset();
-    this.waste.reset();
   }
 }

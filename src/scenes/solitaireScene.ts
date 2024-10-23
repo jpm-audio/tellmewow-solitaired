@@ -14,6 +14,7 @@ import { TableuDealer } from '../components/tableuDealer';
 import { CardsDealer } from '../systems/cardsDealer';
 import { GameController } from '../systems/gameController';
 import Card from '../components/card';
+import { Dealer, IntersectionResult } from '../components/dealer';
 
 export class SolitaireScene extends Container {
   protected _isInitialized: boolean = false;
@@ -250,6 +251,35 @@ export class SolitaireScene extends Container {
       this.onDragMove(event);
     }
 
+    const intersectedTableu = this.tableuDealer?.checkIntersections(
+      this._draggedCard
+    ) as IntersectionResult[];
+    const intersectedFoundations = this.foundationsDealer?.checkIntersections(
+      this._draggedCard
+    ) as IntersectionResult[];
+    const intersectedCards = [...intersectedTableu, ...intersectedFoundations];
+
+    // Order the intersected cards by intersection area
+    intersectedCards?.sort((a, b) => b.intersection - a.intersection);
+
+    // Move the card to the top card of the intersected pile
+    if (intersectedCards[0]) {
+      console.log(intersectedCards[0]);
+      const intCard = intersectedCards[0].card;
+      const dealer: Dealer | null =
+        intCard.location?.deck === 'foundation'
+          ? this.foundationsDealer
+          : this.tableuDealer;
+
+      dealer?.addCards([this._draggedCard], intCard.location?.pile || 0);
+    } else {
+      this.onDragCancel();
+    }
+  }
+
+  public onDragCancel() {
+    if (!this._isDragging || !this._draggedCard) return;
+
     const cardLocation = this._draggedCard.location;
     const deckName = cardLocation?.deck;
     if (deckName === 'tableu') {
@@ -267,11 +297,6 @@ export class SolitaireScene extends Container {
 
     this._isDragging = false;
     this._draggedCard = null;
-  }
-
-  public onDragCancel() {
-    console.log('Scene Cancel');
-    this.onDragEnd();
   }
 
   public shuffle() {
