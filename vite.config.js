@@ -3,7 +3,7 @@
 /** @type {import('vite').UserConfig} */
 export default {
   // root: './',
-  // base: './',
+  base: '',
   // publicDir: './public',
   // cacheDir: "node_modules/.vite",
   // envDir: "./",
