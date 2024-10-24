@@ -1,6 +1,6 @@
-import { P as Point, r as removeItems, E as ExtensionType, b as Ticker, U as UPDATE_PRIORITY, c as EventEmitter, w as warn, e as extensions, C as Container } from "./index-Ba7yBvo5.js";
-import "./webworkerAll-KDfA5zQT.js";
-import "./colorToUniform-CCpB_TUu.js";
+import { P as Point, r as removeItems, E as ExtensionType, b as Ticker, U as UPDATE_PRIORITY, c as EventEmitter, w as warn, e as extensions, C as Container } from "./index-D5yNLquu.js";
+import "./webworkerAll-B1yTfXK6.js";
+import "./colorToUniform-BmxvuzQv.js";
 class FederatedEvent {
   /**
    * @param manager - The event boundary which manages this event. Propagation can only occur

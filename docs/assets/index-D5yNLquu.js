@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./browserAll-ClZHCwK5.js","./webworkerAll-KDfA5zQT.js","./colorToUniform-CCpB_TUu.js","./WebGPURenderer-qsEC6DJo.js","./SharedSystems-CSjVSjVW.js","./WebGLRenderer-D8hpNgJ_.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./browserAll-Cx-N1zjp.js","./webworkerAll-B1yTfXK6.js","./colorToUniform-BmxvuzQv.js","./WebGPURenderer-BqXfFqs0.js","./SharedSystems-DHeRJ2HQ.js","./WebGLRenderer-bKxQCn5u.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -299,7 +299,7 @@ const browserExt = {
   },
   test: () => true,
   load: async () => {
-    await __vitePreload(() => import("./browserAll-ClZHCwK5.js"), true ? __vite__mapDeps([0,1,2]) : void 0, import.meta.url);
+    await __vitePreload(() => import("./browserAll-Cx-N1zjp.js"), true ? __vite__mapDeps([0,1,2]) : void 0, import.meta.url);
   }
 };
 const webworkerExt = {
@@ -310,7 +310,7 @@ const webworkerExt = {
   },
   test: () => typeof self !== "undefined" && self.WorkerGlobalScope !== void 0,
   load: async () => {
-    await __vitePreload(() => import("./webworkerAll-KDfA5zQT.js"), true ? __vite__mapDeps([1,2]) : void 0, import.meta.url);
+    await __vitePreload(() => import("./webworkerAll-B1yTfXK6.js"), true ? __vite__mapDeps([1,2]) : void 0, import.meta.url);
   }
 };
 class ObservablePoint {
@@ -9381,7 +9381,7 @@ async function autoDetectRenderer(options) {
     const rendererType = preferredOrder[i2];
     if (rendererType === "webgpu" && await isWebGPUSupported()) {
       const { WebGPURenderer } = await __vitePreload(async () => {
-        const { WebGPURenderer: WebGPURenderer2 } = await import("./WebGPURenderer-qsEC6DJo.js");
+        const { WebGPURenderer: WebGPURenderer2 } = await import("./WebGPURenderer-BqXfFqs0.js");
         return { WebGPURenderer: WebGPURenderer2 };
       }, true ? __vite__mapDeps([3,2,4]) : void 0, import.meta.url);
       RendererClass = WebGPURenderer;
@@ -9391,7 +9391,7 @@ async function autoDetectRenderer(options) {
       options.failIfMajorPerformanceCaveat ?? AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat
     )) {
       const { WebGLRenderer } = await __vitePreload(async () => {
-        const { WebGLRenderer: WebGLRenderer2 } = await import("./WebGLRenderer-D8hpNgJ_.js");
+        const { WebGLRenderer: WebGLRenderer2 } = await import("./WebGLRenderer-bKxQCn5u.js");
         return { WebGLRenderer: WebGLRenderer2 };
       }, true ? __vite__mapDeps([5,2,4]) : void 0, import.meta.url);
       RendererClass = WebGLRenderer;
@@ -26435,11 +26435,8 @@ class SolitaireScene extends Container {
   }
   onDragStart(event) {
     var _a;
-    console.log(event);
-    console.log(event.target.constructor.name);
     if (event.target.constructor.name !== "Card") return;
     event.stopPropagation();
-    console.log("onDragStart 1");
     this._draggedCards = {
       cards: [],
       cardOrigin: new Point(),
@@ -26447,11 +26444,9 @@ class SolitaireScene extends Container {
       cardsOffset: new Point()
     };
     this._draggedCards.clientOrigin.copyFrom(event.getLocalPosition(this));
-    console.log("onDragStart 2");
     const card = event.target;
     const coords = (_a = this.cardsDealer) == null ? void 0 : _a.getCardGlobalCoords(card);
     this._draggedCards.cardOrigin.copyFrom(coords);
-    console.log("onDragStart 4");
     if (!coords) return;
     const cardLocation = card.location;
     const deckName = cardLocation == null ? void 0 : cardLocation.deck;
@@ -26459,7 +26454,6 @@ class SolitaireScene extends Container {
       this.onDragCancel();
       return;
     }
-    console.log("onDragStart 5");
     const dealer = this.getDealerByName(deckName);
     const pileOffset = dealer.getPile(cardLocation.pile).currentOffset;
     this._draggedCards.cards = dealer.getDragCards(
@@ -26467,17 +26461,13 @@ class SolitaireScene extends Container {
       cardLocation.position
     );
     this._draggedCards.cardsOffset.y = pileOffset;
-    console.log("onDragStart 6");
     this._draggedCards.cards.forEach((card2, index) => {
       card2.y = coords.y + pileOffset * index;
       card2.x = coords.x;
       this.addChild(card2);
     });
-    console.log("onDragStart 7");
-    this.emit("onDragStart", this._draggedCards);
-    console.log("onDragStart 8");
     sound.play("card-touch");
-    console.log("onDragStart 9");
+    this.emit("onDragStart", this._draggedCards);
   }
   onDragMove(event) {
     if (!this._draggedCards) return;
