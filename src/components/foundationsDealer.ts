@@ -1,6 +1,6 @@
 import { Dealer, DealerSettings, IntersectionResult } from './dealer';
 import Deck from './deck';
-import { Decks } from '../constants/cards';
+import CARD_SUITS, { Decks } from '../constants/cards';
 import Card from './card';
 
 export class FoundationsDealer extends Dealer {
@@ -53,5 +53,13 @@ export class FoundationsDealer extends Dealer {
 
       return false;
     });
+  }
+
+  public checkWin(): boolean {
+    const fullDecks = this._decksLayer.children.filter((deck) => {
+      const pile = deck as Deck;
+      return pile.numCards === CARD_SUITS[0].values;
+    });
+    return fullDecks.length === CARD_SUITS.length;
   }
 }

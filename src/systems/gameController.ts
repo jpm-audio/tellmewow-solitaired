@@ -190,6 +190,12 @@ export class GameController extends EventEmitter {
           this._actionsHandler?.undo();
         }
       );
+
+    if (this._htmlUIController.buttons.winGame)
+      this._htmlUIController.buttons.winGame.addEventListener(
+        'pointerdown',
+        () => this._newGame()
+      );
   }
 
   private _onPlayerPlaying() {
@@ -200,13 +206,13 @@ export class GameController extends EventEmitter {
     }
   }
 
-  private _onPlayerEndMove(
+  private async _onPlayerEndMove(
     cardInfo: CardInfo,
     cardFrom: CardLocation,
     cardTo: CardLocation
   ) {
     // Update Stats
-    this._actionsHandler?.do({
+    await this._actionsHandler?.do({
       action: 'move' as Actions,
       card: cardInfo,
       from: cardFrom,
@@ -262,6 +268,11 @@ export class GameController extends EventEmitter {
     this.enable();
   }
 
+  private _winGame() {
+    this.disable();
+    this._htmlUIController?.openWinOverlay();
+  }
+
   public async init() {
     if (this._initialized) return;
     this._initialized = true;
@@ -315,6 +326,11 @@ export class GameController extends EventEmitter {
         tableu: this._scene.tableuDealer?.info,
       },
     });
+
+    // Check for win
+    if (this._scene.foundationsDealer?.checkWin()) {
+      this._winGame();
+    }
   }
 
   public onStatsChange() {
