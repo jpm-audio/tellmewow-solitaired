@@ -45,7 +45,7 @@ export class GameController extends EventEmitter {
     Assets.add([
       {
         alias: 'main',
-        src: `/assets/sprites/main-0${
+        src: `assets/sprites/main-0${
           this.resolution === 1 ? '' : `x${this.resolution}`
         }.json`,
       },
@@ -281,6 +281,14 @@ export class GameController extends EventEmitter {
 
     // Init View
     await this._initView();
+
+    // Init Audio
+    sound.add('card-touch', 'assets/audios/card-touch.mp3');
+    sound.add('card-drop', 'assets/audios/card-drop.mp3');
+    sound.add('card-flip', 'assets/audios/card-flip-4.mp3');
+    sound.add('card-nice', 'assets/audios/card-success.mp3');
+    sound.add('card-great', 'assets/audios/card-success-big.mp3');
+    sound.add('congrats', 'assets/audios/congrats.mp3');
 
     // Init Actions
     this._initActions();
