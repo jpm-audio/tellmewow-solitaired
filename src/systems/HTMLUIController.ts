@@ -1,4 +1,5 @@
 import { EventEmitter } from 'pixi.js';
+import { Deferred } from '../utils/deferred';
 
 type HTMLElementCollection = { [key: string]: HTMLElement | null };
 type HTMLButtonCollection = { [key: string]: HTMLButtonElement | null };
@@ -14,6 +15,7 @@ export class HTMLUIController extends EventEmitter {
     this._initialized = true;
 
     this.buttons.newGame = document.querySelector('#button-new-game');
+    this.buttons.restartGame = document.querySelector('#button-restart-game');
     this.buttons.undo = document.querySelector('#button-undo');
     this.buttons.muteAudio = document.querySelector('#button-mute-audio');
     this.buttons.startTimer = document.querySelector('#button-start-timer');
@@ -21,20 +23,26 @@ export class HTMLUIController extends EventEmitter {
     this.buttons.unpauseTimer = document.querySelector('#button-unpause-timer');
 
     this.displays.timer = document.querySelector('#display-timer');
-    this.displays.metricsMoves = document.querySelector(
-      '#display-metrics-moves'
-    );
-    this.displays.metricsStock = document.querySelector(
-      '#display-metrics-stock'
-    );
-    this.displays.metricsPassthrus = document.querySelector(
-      '#display-metrics-passthrus'
-    );
+    this.displays.moves = document.querySelector('#metric-value-moves');
+    this.displays.stock = document.querySelector('#metric-value-stock');
+    this.displays.passthrus = document.querySelector('#metric-value-passthrus');
     document.querySelector('#metrics-passthrus');
 
     this.disable();
 
     return this;
+  }
+
+  public async start() {
+    const gameContainer = document.querySelector(
+      '.game_container'
+    ) as HTMLElement;
+    if (gameContainer) gameContainer.style.opacity = '1';
+    const deferred = new Deferred();
+    setTimeout(() => {
+      deferred.resolve(null);
+    }, 250);
+    await deferred.promise;
   }
 
   public updateDisplay(displayId: string, content: string) {

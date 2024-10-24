@@ -1,7 +1,8 @@
 import { EventEmitter } from 'pixi.js';
-import { Actions, CardSuitInfo, Decks } from '../constants/cards';
+import { Actions, Decks } from '../constants/cards';
 import { LocalStorage } from '../utils/localStorage';
 import { interactionDefinition, VirtualPlayer } from './virtualPlayer';
+import { CardInfo } from '../components/card';
 
 export interface CardLocation {
   deck: Decks;
@@ -11,7 +12,7 @@ export interface CardLocation {
 
 export interface Action {
   action: Actions;
-  card?: CardSuitInfo;
+  card?: CardInfo;
   from?: CardLocation;
   to?: CardLocation;
 }
@@ -63,10 +64,6 @@ export default class ActionsHandler extends EventEmitter {
     if (this._storage !== null) {
       this._actions = this._storage.get() || [];
     }
-
-    // Check for stored Game State
-    // TODO
-
     return this;
   }
 
@@ -75,28 +72,29 @@ export default class ActionsHandler extends EventEmitter {
   }
 
   public async do(actionInfo: Action): Promise<ActionsHandler> {
-    await this._virtualPlayer?.interact(actionInfo);
-    console.log(this._actions);
-    this._actions.push({ ...actionInfo, undo: false, redo: false });
+    const actionRegister: ActionRegister = {
+      ...actionInfo,
+      undo: false,
+      redo: false,
+    };
+    await this._virtualPlayer?.interact(actionRegister);
+    this._actions.push(actionRegister);
     this._save();
-
-    // Execute the action
-    // TODO
-
     return this;
   }
 
   public async undo(): Promise<ActionsHandler> {
     if (this._actions.length === 0) return this;
 
-    const lastAction = this._actions[this._actions.length - 1];
+    const actionRegister: ActionRegister | undefined = this._actions.pop();
 
     // Undo the action (inverse from - to)
-    // TODO
+    if (actionRegister) {
+      actionRegister.undo = true;
+      await this._virtualPlayer?.interact(actionRegister);
 
-    lastAction.undo = true;
-    this._save();
-
+      this._save();
+    }
     return this;
   }
 

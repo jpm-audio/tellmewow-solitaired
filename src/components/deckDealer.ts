@@ -1,9 +1,9 @@
 import { Container, Point } from 'pixi.js';
 import Deck from './deck';
 import Card from './card';
-import CardFlipAnimation from '../animations/cardFlipAnimation';
 import { Dealer, DealerSettings } from './dealer';
 import { Decks } from '../constants/cards';
+import { CardState } from '../systems/stateHandler';
 
 interface DeckDealerSettings extends DealerSettings {
   dealAnimation: {
@@ -13,13 +13,38 @@ interface DeckDealerSettings extends DealerSettings {
 
 export class DeckDealer extends Dealer {
   protected _name: Decks = 'waste';
-  protected _cardAnimation: CardFlipAnimation;
   protected _cardsLayer: Container;
+  protected _dealAnimationDuration: number = 0.15;
   public stock: Deck;
   public waste: Deck;
 
+  public get info(): CardState[][] {
+    const dealerInfo: CardState[][] = [];
+
+    this._decksLayer.children.forEach((deck, deckIndex) => {
+      const pile = deck as Deck;
+      const cards = pile.seeCards();
+      const deckInfo: CardState[] = [];
+      cards.forEach((card, cardIndex) => {
+        deckInfo.push({
+          info: card.info,
+          location: {
+            deck: deckIndex === 0 ? 'stock' : 'waste',
+            pile: cardIndex,
+            position: deckIndex,
+          },
+        });
+      });
+      dealerInfo.push(deckInfo);
+    });
+
+    return dealerInfo;
+  }
+
   constructor(settings: DeckDealerSettings) {
-    super();
+    super(settings);
+
+    this._dealAnimationDuration = settings.dealAnimation.duration;
 
     // Layers
     this._cardsLayer = new Container();
@@ -57,11 +82,6 @@ export class DeckDealer extends Dealer {
     this.waste.y = settings.bases[1].y;
     this._decksLayer.addChild(this.waste);
 
-    // Animation
-    this._cardAnimation = new CardFlipAnimation(
-      settings.dealAnimation.duration
-    );
-
     // Events
     settings.bases[0].eventMode = 'static';
     settings.bases[0].cursor = 'pointer';
@@ -81,17 +101,14 @@ export class DeckDealer extends Dealer {
 
     this._cardsLayer.addChildAt(card, 0);
 
-    this._cardAnimation.scale = { x: 0, y: card.scale.y };
-    await this._cardAnimation.addPlay(
-      card,
+    await card.animateFlip(
+      this._dealAnimationDuration,
       new Point(deckFrom.x + deck1Coords.x, deckFrom.y + deck1Coords.y),
-      new Point(deckTo.x + deck2Coords.x, deckTo.y + deck2Coords.y),
-      () => card.flip(),
-      () => {
-        this._cardsLayer.removeChild(card);
-        this.addCards([card], isDeal ? 1 : 0);
-      }
+      new Point(deckTo.x + deck2Coords.x, deckTo.y + deck2Coords.y)
     );
+
+    this._cardsLayer.removeChild(card);
+    this.addCards([card], isDeal ? 1 : 0);
   }
 
   public addCards(cards: Card[], deckIndex: number = 0) {
@@ -143,7 +160,6 @@ export class DeckDealer extends Dealer {
 
     cards.forEach((card) => {
       this.waste.addCard(card, 'front');
-      console.log(card.info.suit + ' - ' + card.info.value);
     });
     this.waste.addCard(lastCard, 'front');
   }

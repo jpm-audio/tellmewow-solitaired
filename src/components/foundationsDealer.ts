@@ -7,7 +7,7 @@ export class FoundationsDealer extends Dealer {
   protected _name: Decks = 'foundation';
 
   constructor(settings: DealerSettings) {
-    super();
+    super(settings);
 
     // Fundations
     for (let i = 0; i < settings.deck.amount; i++) {
@@ -40,7 +40,6 @@ export class FoundationsDealer extends Dealer {
     return intersectedCards.filter((result) => {
       if (result.card.constructor.name === 'Card') {
         const resultCard = result.card as Card;
-        console.log('Card', card.info.value);
         return (
           card.info.value === resultCard.info.value + 1 &&
           card.testSuit(resultCard)
@@ -48,7 +47,6 @@ export class FoundationsDealer extends Dealer {
       }
 
       if (result.card.constructor.name === 'CardBase') {
-        console.log('card base', card.info.value);
         // Filter for card is a "A", value of 1
         return card.info.value === 1;
       }

@@ -1,8 +1,8 @@
-import { GameAction } from './actionsHandler';
+import { ActionRegister } from './actionsHandler';
 
 export interface interactionDefinition {
   id: string;
-  callback: (action: GameAction) => Promise<void>;
+  callback: (action: ActionRegister) => Promise<void>;
 }
 
 export class VirtualPlayer {
@@ -14,7 +14,7 @@ export class VirtualPlayer {
     this._interactions.push(interaction);
   }
 
-  public async interact(action: GameAction) {
+  public async interact(action: ActionRegister) {
     const interaction = this._interactions.find((i) => i.id === action.action);
     if (interaction) await interaction.callback(action);
   }

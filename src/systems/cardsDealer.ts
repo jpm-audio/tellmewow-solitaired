@@ -13,7 +13,7 @@ export class CardsDealer extends EventEmitter {
     cardsSuitInfo.forEach((suit) => {
       for (let i = 1; i < suit.values + 1; i++) {
         const card = new Card(
-          { suit: suit.id, value: i },
+          { suit: suit.id, value: i, way: 'back' },
           'back_red.png',
           `${suit.id}_${i}.png`
         );
@@ -72,5 +72,9 @@ export class CardsDealer extends EventEmitter {
 
   public getStock(): Card[] {
     return this.getHandCards(this._hand.length);
+  }
+
+  public reset() {
+    this._hand = [];
   }
 }

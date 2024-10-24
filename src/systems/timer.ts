@@ -18,7 +18,6 @@ export class Timer extends EventEmitter {
   }
 
   public set time(value: number) {
-    console.log(value);
     this._elapsedTime = value;
     this.updateDisplayTime();
   }
@@ -96,27 +95,26 @@ export class Timer extends EventEmitter {
   }
 
   public pause() {
-    if (!this._isRunning) return;
+    if (!this._isRunning || this._isPaused) return;
     this._isPaused = true;
     this._updateViewState();
   }
 
   public resume() {
-    if (!this._isRunning) return;
+    if (!this._isRunning || !this._isPaused) return;
     this._lastTime = Date.now();
     this._isPaused = false;
     this._updateViewState();
   }
 
   public stop() {
-    if (this._isRunning) return;
+    if (!this._isRunning) return;
     this._isRunning = false;
     this._ticker?.remove(this._updateTime, this);
     this.reset();
   }
 
   public reset() {
-    if (!this._ticker) return;
     this._isPaused = false;
     this.time = 0;
     this._updateViewState();

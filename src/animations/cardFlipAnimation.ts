@@ -18,8 +18,8 @@ export default class CardFlipAnimation {
     card: Card,
     from: Point,
     to: Point,
-    onFlip: () => void,
-    onComplete: () => void
+    onFlip: () => void = () => {},
+    onComplete: () => void = () => {}
   ) {
     const deferred = new Deferred<void>();
     const flipX = this.flipOffset.x + from.x + (to.x - from.x) / 2;
@@ -53,7 +53,7 @@ export default class CardFlipAnimation {
         skewY: initSkew.y,
       },
       duration: this.duration / 2,
-      ease: 'sin.out',
+      ease: 'sine.out',
       onComplete: onComplete,
     });
     tween2.pause();

@@ -2,12 +2,13 @@ import { Dealer, DealerSettings, IntersectionResult } from './dealer';
 import Deck from './deck';
 import Card from './card';
 import { Decks } from '../constants/cards';
+import { Point } from 'pixi.js';
 
 export class TableuDealer extends Dealer {
   protected _name: Decks = 'tableu';
 
-  constructor(settings: DealerSettings) {
-    super();
+  constructor(settings: DealerSettings, maxHeight: number = 1000) {
+    super(settings);
 
     const offset = {
       x: settings.deck.padding + settings.deck.width / 2,
@@ -28,7 +29,7 @@ export class TableuDealer extends Dealer {
       base.position.copyFrom(position);
       this._basesLayer.addChild(base);
 
-      const deck = new Deck(settings.deck.offset);
+      const deck = new Deck(settings.deck.offset, maxHeight);
       deck.position.copyFrom(position);
       this._decksLayer.addChild(deck);
     }
@@ -69,5 +70,35 @@ export class TableuDealer extends Dealer {
 
       return false;
     });
+  }
+
+  public async turnTopPileCard(pile: number = 0) {
+    const deck = this.getPile(pile);
+    const topCard = deck.topCard();
+    if (topCard === null || topCard.isFront) return;
+    await topCard.animateFlip(0.15);
+  }
+
+  public getDragCards(deckIndex: number, positionIndex: number = 0): Card[] {
+    const deck = this.getPile(deckIndex);
+    const cards: Card[] = [];
+
+    if (deck && deck.numCards > positionIndex) {
+      let card;
+      do {
+        card = deck.getCard(positionIndex);
+        if (card !== null) {
+          cards.push(card);
+        }
+      } while (card !== null);
+    }
+    return cards;
+  }
+
+  public async addCards(cards: Card[], deckIndex: number, offset?: Point) {
+    super.addCards(cards, deckIndex, offset);
+
+    // TODO: Add cards to the tableu
+    await this.getPile(deckIndex).adaptHeight(true);
   }
 }

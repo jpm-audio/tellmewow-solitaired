@@ -1,19 +1,27 @@
-import { Sprite, Texture } from 'pixi.js';
+import { Point, Sprite, Texture } from 'pixi.js';
 import CARD_SUITS, { CardSuit } from '../constants/cards';
 import { CardBase } from './cardBase';
+import CardFlipAnimation from '../animations/cardFlipAnimation';
 
 export type CardInfo = {
   suit: CardSuit;
   value: number;
+  way: 'front' | 'back';
 };
 
 class Card extends CardBase {
   protected _info: CardInfo;
   protected _back: Sprite;
   protected _front: Sprite;
+  protected _flipAnimation: CardFlipAnimation;
+  protected _defaultFlipAnimationDuration: number = 0.15;
 
   public get info() {
     return this._info;
+  }
+
+  public get isFront() {
+    return this._front.visible;
   }
 
   constructor(
@@ -23,6 +31,10 @@ class Card extends CardBase {
     frontVisible: boolean = false
   ) {
     super();
+
+    this._flipAnimation = new CardFlipAnimation(
+      this._defaultFlipAnimationDuration
+    );
 
     this._info = info;
     this._front = Sprite.from(front);
@@ -37,7 +49,7 @@ class Card extends CardBase {
     this.reset(frontVisible);
   }
 
-  flip() {
+  public flip() {
     if (this._back.visible) {
       this.set('front');
     } else {
@@ -45,15 +57,29 @@ class Card extends CardBase {
     }
   }
 
-  set(way: 'front' | 'back') {
+  public async animateFlip(
+    duration: number = this._defaultFlipAnimationDuration,
+    from: Point = this.position,
+    to: Point = this.position
+  ) {
+    const originalScale = this.scale.y;
+
+    this._flipAnimation.duration = duration;
+    this._flipAnimation.scale = { x: 0, y: originalScale };
+
+    await this._flipAnimation.addPlay(this, from, to, () => this.flip());
+  }
+
+  public set(way: 'front' | 'back') {
     const isFront = way === 'front';
     this._back.visible = !isFront;
     this._front.visible = isFront;
     this.eventMode = isFront ? 'dynamic' : 'none';
     this.cursor = isFront ? 'pointer' : 'default';
+    this.info.way = way;
   }
 
-  reset(frontVisible: boolean = false) {
+  public reset(frontVisible: boolean = false) {
     this._back.visible = !frontVisible;
     this._front.visible = frontVisible;
     this.x = 0;
@@ -62,18 +88,18 @@ class Card extends CardBase {
     this.skew.set(0);
   }
 
-  disable() {
+  public disable() {
     this.eventMode = 'none';
     this.cursor = 'default';
   }
 
-  enable() {
+  public enable() {
     const isFront = this._front.visible;
     this.eventMode = isFront ? 'dynamic' : 'none';
     this.cursor = isFront ? 'pointer' : 'default';
   }
 
-  testColor(card: Card): boolean {
+  public testColor(card: Card): boolean {
     const cardSuit = card.info.suit;
     const thisSuit = this.info.suit;
     const cardColor =
@@ -83,7 +109,7 @@ class Card extends CardBase {
     return thisColor === cardColor;
   }
 
-  testSuit(card: Card): boolean {
+  public testSuit(card: Card): boolean {
     return this.info.suit === card.info.suit;
   }
 }
