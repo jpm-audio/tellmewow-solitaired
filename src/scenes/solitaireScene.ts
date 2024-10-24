@@ -167,6 +167,9 @@ export class SolitaireScene extends Container {
   }
 
   public onDragStart(event: FederatedPointerEvent) {
+    console.log(event);
+    console.log(event.target.constructor.name);
+
     if (event.target.constructor.name !== 'Card') return;
 
     event.stopPropagation();
@@ -232,11 +235,7 @@ export class SolitaireScene extends Container {
   }
 
   public onDragMove(event: FederatedPointerEvent) {
-    console.log('onDragMove 1');
-
     if (!this._draggedCards) return;
-
-    console.log('onDragMove 2');
 
     const newCoords = new Point(
       this._draggedCards.cardOrigin.x +
@@ -244,8 +243,6 @@ export class SolitaireScene extends Container {
       this._draggedCards.cardOrigin.y +
         (event.getLocalPosition(this).y - this._draggedCards.clientOrigin.y)
     );
-
-    console.log('onDragMove 3');
 
     this._draggedCards.cards.forEach((card, index) => {
       if (this._draggedCards === null) return;
@@ -256,15 +253,11 @@ export class SolitaireScene extends Container {
   }
 
   public onDragEnd(event?: FederatedPointerEvent) {
-    console.log('onDragEnd 1');
     if (!this._draggedCards) return;
 
-    console.log('onDragEnd 2');
     if (event) {
       this.onDragMove(event);
     }
-
-    console.log('onDragEnd 3');
 
     const intersectedTableu = this.tableuDealer?.checkIntersections(
       this._draggedCards.cards[0]
@@ -335,14 +328,10 @@ export class SolitaireScene extends Container {
   }
 
   public onDragCancel() {
-    console.log('onDragCancel 1');
-
     if (!this._draggedCards) return;
 
     const cardLocation = this._draggedCards.cards[0].location;
     const deckName = cardLocation?.deck;
-
-    console.log('onDragCancel 2');
 
     if (deckName === 'tableu') {
       this.tableuDealer?.addCards(
