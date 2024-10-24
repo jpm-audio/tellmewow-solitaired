@@ -7,6 +7,7 @@ import { Actions, Decks } from '../constants/cards';
 import { HTMLUIController } from './HTMLUIController';
 import { Timer } from './timer';
 import { CardInfo } from '../components/card';
+import { sound } from '@pixi/sound';
 
 export class GameController extends EventEmitter {
   public resolution: number = 1;
@@ -271,6 +272,7 @@ export class GameController extends EventEmitter {
   private _winGame() {
     this.disable();
     this._htmlUIController?.openWinOverlay();
+    sound.play('congrats');
   }
 
   public async init() {

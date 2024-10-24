@@ -17,6 +17,7 @@ import { DeckBase } from '../components/deckBase';
 import { StateRegister } from '../systems/stateHandler';
 import { CardLocation } from '../systems/actionsHandler';
 import gsap from 'gsap';
+import { sound } from '@pixi/sound';
 
 interface DragggingCards {
   cards: Card[];
@@ -209,6 +210,8 @@ export class SolitaireScene extends Container {
       this.addChild(card);
     });
 
+    sound.play('card-touch');
+
     this.emit('onDragStart', this._draggedCards);
   }
 
@@ -284,6 +287,12 @@ export class SolitaireScene extends Container {
         this._draggedCards.cards,
         intCard.location?.pile || 0
       );
+
+      if (this._draggedCards.cards[0].info.value === 1) {
+        sound.play('card-great');
+      } else {
+        sound.play('card-nice');
+      }
     }
 
     this.emit(
@@ -295,6 +304,8 @@ export class SolitaireScene extends Container {
 
     // Drag End
     this._draggedCards = null;
+
+    sound.play('card-drop');
   }
 
   public onDragCancel() {
@@ -322,6 +333,7 @@ export class SolitaireScene extends Container {
     this._draggedCards = null;
 
     this.emit('onDragCancel');
+    sound.play('card-drop');
   }
 
   public shuffle() {
