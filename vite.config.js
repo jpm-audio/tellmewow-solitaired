@@ -87,7 +87,7 @@ export default {
     // ssrManifest: false,
     // ssr: false,
     // ssrEmitAssets: false,
-    // minify: 'esbuild', // Set to false to disable minification, or specify the minifier to use.
+    minify: false, //'esbuild', // Set to false to disable minification, or specify the minifier to use.
     // terserOptions: {},
     // write: true,
     // emptyOutDir: true, // Vite will empty the outDir on build if it is inside project root.
@@ -110,7 +110,10 @@ export default {
     entries: [], // Vite will crawl all your .html files to detect dependencies that need to be pre-bundled.
     //exclude: [], // Dependencies to exclude from pre-bundling.
     //include: [], // By default, linked packages not inside node_modules are not pre-bundled. Use this option to force a linked package to be pre-bundled.
-    //esbuildOptions: {}, // Options to pass to esbuild during the dep scanning and optimization.
+    esbuildOptions: {
+      minify: true,
+      keepNames: true,
+    }, // Options to pass to esbuild during the dep scanning and optimization.
     //force: false, // Set to true to force dependency pre-bundling, ignoring previously cached optimized dependencies.
     //holdUntilCrawlEnd: true, // When enabled, it will hold the first optimized deps results until all static imports are crawled on cold start.
     //needsInterop: [], // Forces ESM interop when importing these dependencies.
