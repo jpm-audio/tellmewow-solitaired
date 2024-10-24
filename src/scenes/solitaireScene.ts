@@ -171,6 +171,8 @@ export class SolitaireScene extends Container {
 
     event.stopPropagation();
 
+    console.log('onDragStart 1');
+
     this._draggedCards = {
       cards: [],
       cardOrigin: new Point(),
@@ -181,10 +183,14 @@ export class SolitaireScene extends Container {
     // Store Client Origin
     this._draggedCards.clientOrigin.copyFrom(event.getLocalPosition(this));
 
+    console.log('onDragStart 2');
+
     // Store Card Origin
     const card = event.target as Card;
     const coords = this.cardsDealer?.getCardGlobalCoords(card) as PointData;
     this._draggedCards.cardOrigin.copyFrom(coords);
+
+    console.log('onDragStart 4');
 
     // Check if the card is draggable
     if (!coords) return;
@@ -195,6 +201,8 @@ export class SolitaireScene extends Container {
       return;
     }
 
+    console.log('onDragStart 5');
+
     // Get the dragged cards
     const dealer = this.getDealerByName(deckName);
     const pileOffset = dealer.getPile(cardLocation.pile).currentOffset;
@@ -204,19 +212,31 @@ export class SolitaireScene extends Container {
     );
     this._draggedCards.cardsOffset.y = pileOffset;
 
+    console.log('onDragStart 6');
+
     this._draggedCards.cards.forEach((card, index) => {
       card.y = coords.y + pileOffset * index;
       card.x = coords.x;
       this.addChild(card);
     });
 
-    sound.play('card-touch');
+    console.log('onDragStart 7');
 
     this.emit('onDragStart', this._draggedCards);
+
+    console.log('onDragStart 8');
+
+    sound.play('card-touch');
+
+    console.log('onDragStart 9');
   }
 
   public onDragMove(event: FederatedPointerEvent) {
+    console.log('onDragMove 1');
+
     if (!this._draggedCards) return;
+
+    console.log('onDragMove 2');
 
     const newCoords = new Point(
       this._draggedCards.cardOrigin.x +
@@ -224,6 +244,8 @@ export class SolitaireScene extends Container {
       this._draggedCards.cardOrigin.y +
         (event.getLocalPosition(this).y - this._draggedCards.clientOrigin.y)
     );
+
+    console.log('onDragMove 3');
 
     this._draggedCards.cards.forEach((card, index) => {
       if (this._draggedCards === null) return;
@@ -234,11 +256,15 @@ export class SolitaireScene extends Container {
   }
 
   public onDragEnd(event?: FederatedPointerEvent) {
+    console.log('onDragEnd 1');
     if (!this._draggedCards) return;
 
+    console.log('onDragEnd 2');
     if (event) {
       this.onDragMove(event);
     }
+
+    console.log('onDragEnd 3');
 
     const intersectedTableu = this.tableuDealer?.checkIntersections(
       this._draggedCards.cards[0]
@@ -309,10 +335,14 @@ export class SolitaireScene extends Container {
   }
 
   public onDragCancel() {
+    console.log('onDragCancel 1');
+
     if (!this._draggedCards) return;
 
     const cardLocation = this._draggedCards.cards[0].location;
     const deckName = cardLocation?.deck;
+
+    console.log('onDragCancel 2');
 
     if (deckName === 'tableu') {
       this.tableuDealer?.addCards(
