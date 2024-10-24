@@ -54,7 +54,7 @@ export class CardsDealer extends EventEmitter {
 
   public shuffle() {
     this._hand = [];
-    this._cards.forEach((card, index) => {
+    this._cards.forEach((_card, index) => {
       this._hand.push(index);
     });
   }

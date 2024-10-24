@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/ico" href="/favicon-192.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solitaire</title>
+    <script type="module" crossorigin src="/assets/index-D9FXQHZx.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/style-DTF3bg2L.css">
+  </head>
+
+  <body style="background-color: black">
+    <div class="game_container" style="opacity: 0">
+      <div id="ui_container">
+        <header>
+          <div class="header-logo"><h1>Solitaire</h1></div>
+          <button id="button-new-game" class="btn primary">New Game</button>
+          <button id="button-restart-game" class="btn primary">
+            Restart Game
+          </button>
+          <button id="button-mute-audio" class="btn primary">Mute</button>
+          <button id="button-undo" class="btn secondary">Undo</button>
+        </header>
+        <footer>
+          <div class="info-box">
+            <div class="info-box-item timer">
+              <div id="display-timer" class="timer">00:00</div>
+              <button id="button-start-timer" class="timer-button">▶</button>
+              <button
+                id="button-pause-timer"
+                class="timer-button"
+                style="display: none"
+              >
+                ❙❙
+              </button>
+              <button
+                id="button-unpause-timer"
+                class="timer-button"
+                style="display: none"
+              >
+                ►
+              </button>
+            </div>
+            <div class="info-box-item metrics">
+              <div class="metric-box">
+                <div id="metric-value-moves" class="metric-box-value">0</div>
+                <div id="display-metrics-moves" class="metric-box-label">
+                  Moves
+                </div>
+              </div>
+              <div class="metric-box">
+                <div id="metric-value-stock" class="metric-box-value">0</div>
+                <div id="display-metrics-stock" class="metric-box-label">
+                  Stock
+                </div>
+              </div>
+              <div class="metric-box">
+                <div id="metric-value-passthrus" class="metric-box-value">
+                  0
+                </div>
+                <div id="display-metrics-passthrus" class="metric-box-label">
+                  Passthrus
+                </div>
+              </div>
+            </div>
+            <div class="info-box-item"></div>
+          </div>
+        </footer>
+      </div>
+
+      <div id="canvas_container"></div>
+
+      <div id="win_overlay">
+        <h1>You Win!</h1>
+        <button id="button-win-game" class="btn primary">PLAY AGAIN</button>
+      </div>
+    </div>
+
+  </body>
+</html>

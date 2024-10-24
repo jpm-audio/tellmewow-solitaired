@@ -1,0 +1,243 @@
+{"frames": {
+
+"back_red.png":
+{
+	"frame": {"x":1745,"y":1176,"w":300,"h":432},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":300,"h":432},
+	"sourceSize": {"w":300,"h":432}
+},
+"card_base-2.png":
+{
+	"frame": {"x":1782,"y":437,"w":254,"h":367},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":254,"h":367},
+	"sourceSize": {"w":254,"h":367}
+},
+"club_1.png":
+{
+	"frame": {"x":1,"y":1,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"club_6.png":
+{
+	"frame": {"x":437,"y":1,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"club_8.png":
+{
+	"frame": {"x":1,"y":304,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"club_9.png":
+{
+	"frame": {"x":304,"y":437,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"club_10.png":
+{
+	"frame": {"x":740,"y":1,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_2.png":
+{
+	"frame": {"x":740,"y":437,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_3.png":
+{
+	"frame": {"x":1,"y":740,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_4.png":
+{
+	"frame": {"x":304,"y":740,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_6.png":
+{
+	"frame": {"x":607,"y":873,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_7.png":
+{
+	"frame": {"x":1043,"y":1,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_12.png":
+{
+	"frame": {"x":1043,"y":437,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"diamond_13.png":
+{
+	"frame": {"x":1043,"y":873,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_1.png":
+{
+	"frame": {"x":1346,"y":1,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_2.png":
+{
+	"frame": {"x":1346,"y":437,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_7.png":
+{
+	"frame": {"x":1649,"y":1,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_9.png":
+{
+	"frame": {"x":1479,"y":740,"w":301,"h":434},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_10.png":
+{
+	"frame": {"x":1,"y":1176,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_11.png":
+{
+	"frame": {"x":437,"y":1176,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"heart_12.png":
+{
+	"frame": {"x":873,"y":1176,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"logo-black.png":
+{
+	"frame": {"x":1782,"y":806,"w":302,"h":194},
+	"rotated": true,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":33,"w":302,"h":194},
+	"sourceSize": {"w":302,"h":302}
+},
+"redo.png":
+{
+	"frame": {"x":304,"y":304,"w":123,"h":115},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":32,"y":36,"w":123,"h":115},
+	"sourceSize": {"w":180,"h":180}
+},
+"spade_4.png":
+{
+	"frame": {"x":1309,"y":1176,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"spade_5.png":
+{
+	"frame": {"x":1,"y":1479,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"spade_7.png":
+{
+	"frame": {"x":437,"y":1479,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"spade_8.png":
+{
+	"frame": {"x":873,"y":1479,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+},
+"spade_9.png":
+{
+	"frame": {"x":1309,"y":1479,"w":301,"h":434},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":301,"h":434},
+	"sourceSize": {"w":301,"h":434}
+}},
+"animations": {
+	"club": ["club_1.png","club_2.png","club_3.png","club_4.png","club_5.png","club_6.png","club_7.png","club_8.png","club_9.png","club_10.png","club_11.png","club_12.png","club_13.png"],
+	"diamond": ["diamond_1.png","diamond_2.png","diamond_3.png","diamond_4.png","diamond_5.png","diamond_6.png","diamond_7.png","diamond_8.png","diamond_9.png","diamond_10.png","diamond_11.png","diamond_12.png","diamond_13.png"],
+	"heart": ["heart_1.png","heart_2.png","heart_3.png","heart_4.png","heart_5.png","heart_6.png","heart_7.png","heart_8.png","heart_9.png","heart_10.png","heart_11.png","heart_12.png","heart_13.png"],
+	"spade": ["spade_1.png","spade_2.png","spade_3.png","spade_4.png","spade_5.png","spade_6.png","spade_7.png","spade_8.png","spade_9.png","spade_10.png","spade_11.png","spade_12.png","spade_13.png"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.1",
+	"image": "main-0x0.75.png",
+	"format": "RGBA8888",
+	"size": {"w":2046,"h":1781},
+	"scale": "0.75",
+	"related_multi_packs": [ "main-1x0.75.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:0c47f125d36d4d558322fc260f8d407f:6a668d85d4b479f5ed8f39bc7bb51e05:7485fde609eb6b536e3b8e5fe6954996$"
+}
+}
