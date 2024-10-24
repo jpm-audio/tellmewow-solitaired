@@ -72,7 +72,7 @@ export default {
     // target:'modules',
     // modulePreload: { polyfill: true },
     // polyfillModulePreload: true,
-    // outDir: 'dist', // Specify the output directory (relative to project root).
+    outDir: 'docs', // Specify the output directory (relative to project root).
     // assetsDir: 'assets', // Specify the directory to nest generated assets under (relative to build.outDir. This is not used in Library Mode).
     // assetsInlineLimit: 4096 // Imported or referenced assets that are smaller than this threshold will be inlined as base64 URLs to avoid extra http requests. Set to 0 to disable inlining altogether.
     cssCodeSplit: false, // Enable CSS code splitting. If disabled, all CSS in the entire project will be extracted into a single CSS file.
