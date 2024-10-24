@@ -1,17 +1,16 @@
-import { Container, Sprite, Texture } from 'pixi.js';
+import { Sprite, Texture } from 'pixi.js';
 import CARD_SUITS, { CardSuit } from '../constants/cards';
-import { CardLocation } from '../systems/actionsHandler';
+import { CardBase } from './cardBase';
 
 export type CardInfo = {
   suit: CardSuit;
   value: number;
 };
 
-class Card extends Container {
+class Card extends CardBase {
   protected _info: CardInfo;
   protected _back: Sprite;
   protected _front: Sprite;
-  public location: CardLocation | null = null;
 
   public get info() {
     return this._info;
@@ -86,33 +85,6 @@ class Card extends Container {
 
   testSuit(card: Card): boolean {
     return this.info.suit === card.info.suit;
-  }
-
-  testIntersection(card: Card): number {
-    const bounds1 = this.getBounds();
-    const bounds2 = card.getBounds();
-
-    const deltaX =
-      bounds1.x < bounds2.x
-        ? bounds1.x + bounds1.width - bounds2.x
-        : bounds2.x + bounds2.width - bounds1.x;
-    const deltaY =
-      bounds1.y < bounds2.y
-        ? bounds1.y + bounds1.height - bounds2.y
-        : bounds2.y + bounds2.height - bounds1.y;
-    const intersectionArea =
-      deltaX > 0 && deltaY > 0
-        ? (deltaX * deltaY) / (bounds1.width * bounds1.height)
-        : 0;
-
-    return intersectionArea;
-
-    /*return (
-      bounds1.x < bounds2.x + bounds2.width &&
-      bounds1.x + bounds1.width > bounds2.x &&
-      bounds1.y < bounds2.y + bounds2.height &&
-      bounds1.y + bounds1.height > bounds2.y
-    );*/
   }
 }
 

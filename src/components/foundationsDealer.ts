@@ -19,13 +19,16 @@ export class FoundationsDealer extends Dealer {
         y: settings.deck.padding + settings.deck.height / 2,
       };
       const base = settings.bases[i];
-      base.x = position.x;
-      base.y = position.y;
+      base.location = {
+        deck: this._name,
+        pile: i,
+        position: -1,
+      };
+      base.position.copyFrom(position);
       this._basesLayer.addChild(base);
 
       const deck = new Deck();
-      deck.x = position.x;
-      deck.y = position.y;
+      deck.position.copyFrom(position);
       this._decksLayer.addChild(deck);
     }
   }
@@ -35,10 +38,22 @@ export class FoundationsDealer extends Dealer {
 
     // Filter for cards with +1 value and different color
     return intersectedCards.filter((result) => {
-      return (
-        card.info.value === result.card.info.value + 1 &&
-        card.testSuit(result.card)
-      );
+      if (result.card.constructor.name === 'Card') {
+        const resultCard = result.card as Card;
+        console.log('Card', card.info.value);
+        return (
+          card.info.value === resultCard.info.value + 1 &&
+          card.testSuit(resultCard)
+        );
+      }
+
+      if (result.card.constructor.name === 'CardBase') {
+        console.log('card base', card.info.value);
+        // Filter for card is a "A", value of 1
+        return card.info.value === 1;
+      }
+
+      return false;
     });
   }
 }

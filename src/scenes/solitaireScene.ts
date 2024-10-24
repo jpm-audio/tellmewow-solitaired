@@ -5,7 +5,6 @@ import {
   Point,
   PointData,
   Sprite,
-  Text,
 } from 'pixi.js';
 import CARD_SUITS from '../constants/cards';
 import { DeckDealer } from '../components/deckDealer';
@@ -15,6 +14,7 @@ import { CardsDealer } from '../systems/cardsDealer';
 import { GameController } from '../systems/gameController';
 import Card from '../components/card';
 import { Dealer, IntersectionResult } from '../components/dealer';
+import { DeckBase } from '../components/deckBase';
 
 export class SolitaireScene extends Container {
   protected _isInitialized: boolean = false;
@@ -74,57 +74,7 @@ export class SolitaireScene extends Container {
 
   private _getDeckBase(variant: number = 0) {
     const aCard = this.cardsDealer?.getCardByIndex(0);
-    const cardHeight = aCard?.height || 100;
-    const cardWidth = aCard?.width || 100;
-
-    if (variant === 1) {
-      const base = new Container();
-      const base1 = Sprite.from(this._config.baseTexture);
-      base1.height = cardHeight;
-      base1.width = cardWidth;
-      base1.anchor.set(0.5);
-      base.addChild(base1);
-
-      const baseLogo = Sprite.from(this._config.baseLogoTexture);
-      baseLogo.scale.set(0.75);
-      baseLogo.anchor.set(0.5);
-      base.addChild(baseLogo);
-
-      return base;
-    }
-
-    if (variant === 2) {
-      const base = new Container();
-      const base1 = Sprite.from(this._config.baseTexture);
-      base1.height = cardHeight;
-      base1.width = cardWidth;
-      base1.anchor.set(0.5);
-      base.addChild(base1);
-
-      const baseRedo = Sprite.from(this._config.redoTexture);
-      baseRedo.anchor.set(0.5, 0.75);
-      base.addChild(baseRedo);
-
-      const text = new Text({
-        text: 'REDEAL',
-        style: {
-          fontFamily: 'Arial',
-          fontSize: 32,
-        },
-      });
-      text.alpha = 0.5;
-      text.anchor.set(0.5);
-      text.y = 50;
-      base.addChild(text);
-
-      return base;
-    }
-
-    const base = Sprite.from(this._config.baseTexture);
-    base.height = cardHeight;
-    base.width = cardWidth;
-    base.anchor.set(0.5);
-    return base;
+    return DeckBase.base(variant, aCard?.width || 100, aCard?.height || 100);
   }
 
   private _createDecks() {
@@ -176,7 +126,15 @@ export class SolitaireScene extends Container {
         height: cardHeight,
         offset: this._config.decksOffset.tableu,
       },
-      bases: [],
+      bases: [
+        this._getDeckBase(),
+        this._getDeckBase(),
+        this._getDeckBase(),
+        this._getDeckBase(),
+        this._getDeckBase(),
+        this._getDeckBase(),
+        this._getDeckBase(),
+      ],
     });
     this.tableuDealer.y = gap + cardHeight;
 
@@ -225,7 +183,6 @@ export class SolitaireScene extends Container {
         );
       }
 
-      //card.parent.removeChild(card);
       this.addChild(card);
 
       card.position.copyFrom(coords);
@@ -264,14 +221,17 @@ export class SolitaireScene extends Container {
 
     // Move the card to the top card of the intersected pile
     if (intersectedCards[0]) {
-      console.log(intersectedCards[0]);
       const intCard = intersectedCards[0].card;
+
+      console.log(intCard.location?.deck);
       const dealer: Dealer | null =
         intCard.location?.deck === 'foundation'
           ? this.foundationsDealer
           : this.tableuDealer;
 
       dealer?.addCards([this._draggedCard], intCard.location?.pile || 0);
+      this._isDragging = false;
+      this._draggedCard = null;
     } else {
       this.onDragCancel();
     }
@@ -282,6 +242,8 @@ export class SolitaireScene extends Container {
 
     const cardLocation = this._draggedCard.location;
     const deckName = cardLocation?.deck;
+
+    console.log(deckName);
     if (deckName === 'tableu') {
       this.tableuDealer?.addCards([this._draggedCard], cardLocation?.pile || 0);
     }

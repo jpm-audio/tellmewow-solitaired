@@ -15,9 +15,21 @@ export class TableuDealer extends Dealer {
     };
 
     for (let i = 0; i < settings.deck.amount; i++) {
+      const position = {
+        x: offset.x + i * (settings.deck.gap + settings.deck.width),
+        y: offset.y,
+      };
+      const base = settings.bases[i];
+      base.location = {
+        deck: this._name,
+        pile: i,
+        position: -1,
+      };
+      base.position.copyFrom(position);
+      this._basesLayer.addChild(base);
+
       const deck = new Deck(settings.deck.offset);
-      deck.x = offset.x + i * (settings.deck.gap + settings.deck.width);
-      deck.y = offset.y;
+      deck.position.copyFrom(position);
       this._decksLayer.addChild(deck);
     }
   }
@@ -39,12 +51,23 @@ export class TableuDealer extends Dealer {
   public checkIntersections(card: Card): IntersectionResult[] {
     const intersectedCards = super.checkIntersections(card);
 
-    // Filter for cards with +1 value and different color
+    // Filter intersected by Dealer Rules
     return intersectedCards.filter((result) => {
-      return (
-        card.info.value + 1 === result.card.info.value &&
-        !card.testColor(result.card)
-      );
+      if (result.card.constructor.name === 'Card') {
+        // Filter for cards with +1 value and different color
+        const resultCard = result.card as Card;
+        return (
+          card.info.value + 1 === resultCard.info.value &&
+          !card.testColor(resultCard as Card)
+        );
+      }
+
+      if (result.card.constructor.name === 'CardBase') {
+        // Filter for card is a "K", value of 13
+        return card.info.value === 13;
+      }
+
+      return false;
     });
   }
 }

@@ -1,7 +1,8 @@
-import { Container, PointData, Sprite } from 'pixi.js';
+import { Container, PointData } from 'pixi.js';
 import Card from './card';
 import Deck from './deck';
 import { Decks } from '../constants/cards';
+import { CardBase } from './cardBase';
 
 export interface DealerSettings {
   deck: {
@@ -12,10 +13,10 @@ export interface DealerSettings {
     height: number;
     offset?: PointData;
   };
-  bases: Array<Sprite | Container>;
+  bases: Array<CardBase>;
 }
 
-export type IntersectionResult = { card: Card; intersection: number };
+export type IntersectionResult = { card: CardBase; intersection: number };
 
 export class Dealer extends Container {
   protected _name: Decks = 'stock';
@@ -24,6 +25,7 @@ export class Dealer extends Container {
 
   constructor() {
     super();
+
     this._basesLayer = new Container();
     this._decksLayer = new Container();
     this.addChild(this._basesLayer);
@@ -31,13 +33,17 @@ export class Dealer extends Container {
   }
 
   public addCards(cards: Card[], deckIndex: number) {
-    cards.forEach((card, index) => {
+    cards.forEach((card) => {
+      const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+
       card.location = {
         deck: this._name,
         pile: deckIndex,
-        position: index,
+        position: deck.numCards,
       };
-      const deck = this._decksLayer.getChildAt(deckIndex) as Deck;
+
+      console.log(card.location);
+
       deck.addCard(card);
     });
   }
@@ -69,25 +75,38 @@ export class Dealer extends Container {
     return deck;
   }
 
+  public getBase(deckIndex: number): CardBase {
+    return this._basesLayer.getChildAt(deckIndex);
+  }
+
   public checkIntersections(card: Card): IntersectionResult[] {
     const intersectedCards: IntersectionResult[] = [];
 
     // Check top card of each pile
-    for (let index = 0; index < this._decksLayer.children.length; index++) {
+    for (
+      let deckIndex = 0;
+      deckIndex < this._decksLayer.children.length;
+      deckIndex++
+    ) {
       // Skip the card pile
-      if (card.location?.deck === this._name && index === card.location?.pile)
+      if (
+        card.location?.deck === this._name &&
+        deckIndex === card.location?.pile
+      )
         continue;
 
       // Get the top card of the pile
-      const deck = this._decksLayer.children[index] as Deck;
-      const topCard = deck.topCard();
-      if (!topCard) continue;
+      const deck = this.getPile(deckIndex) as Deck;
+      const cardBase: CardBase | null =
+        deck.topCard() || this.getBase(deckIndex);
+
+      if (!cardBase) continue;
 
       // Check if the card intersects with the top card
-      const intersectionArea = card.testIntersection(topCard);
+      const intersectionArea = card.testIntersection(cardBase);
       if (intersectionArea > 0) {
         intersectedCards.push({
-          card: topCard,
+          card: cardBase,
           intersection: intersectionArea,
         });
       }

@@ -28,11 +28,21 @@ export class DeckDealer extends Dealer {
     // Bases
     settings.bases[0].x = settings.deck.padding + settings.deck.width / 2;
     settings.bases[0].y = settings.deck.padding + settings.deck.height / 2;
+    settings.bases[0].location = {
+      deck: 'stock',
+      pile: 0,
+      position: -1,
+    };
     this._basesLayer.addChild(settings.bases[0]);
 
     settings.bases[1].x =
       settings.bases[0].x + settings.deck.gap + settings.deck.width;
     settings.bases[1].y = settings.bases[0].y;
+    settings.bases[1].location = {
+      deck: 'waste',
+      pile: 1,
+      position: -1,
+    };
     this._basesLayer.addChild(settings.bases[1]);
 
     // Stock
@@ -79,7 +89,7 @@ export class DeckDealer extends Dealer {
       () => card.flip(),
       () => {
         this._cardsLayer.removeChild(card);
-        deckTo.addCard(card, isDeal ? 'front' : 'back');
+        this.addCards([card], isDeal ? 1 : 0);
       }
     );
   }
@@ -87,8 +97,8 @@ export class DeckDealer extends Dealer {
   public addCards(cards: Card[], deckIndex: number = 0) {
     cards.forEach((card, index) => {
       card.location = {
-        deck: 'waste',
-        pile: 1,
+        deck: deckIndex === 0 ? 'stock' : 'waste',
+        pile: deckIndex,
         position: index,
       };
       if (deckIndex === 0) {
