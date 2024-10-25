@@ -259,17 +259,24 @@ export class SolitaireScene extends Container {
 
     // Move the card to the top card of the intersected pile
     const intCard = intersectedCards[0].card;
+    let hasHostCard2Turn = false;
 
     // Shows the next Card into the origin pile
     if (this._draggedCards.cards[0].location?.deck === 'tableu') {
-      this.tableuDealer?.turnTopPileCard(
-        this._draggedCards.cards[0].location?.pile || 0
-      );
+      // Check whether the host card actually need turning up
+      const originPile = this._draggedCards.cards[0].location?.pile || 0;
+      hasHostCard2Turn = this.tableuDealer?.isTopCardUp(originPile) as boolean;
+
+      if (hasHostCard2Turn) {
+        this.tableuDealer?.turnTopPileCard(
+          this._draggedCards.cards[0].location?.pile || 0
+        );
+      }
     }
 
     const originCardLocation = {
       deck: this._draggedCards.cards[0].location?.deck,
-      pile: this._draggedCards.cards[0].location?.pile,
+      pile: this._draggedCards.cards[0].location?.pile || 0,
       position: this._draggedCards.cards[0].location?.position,
     };
 
@@ -295,11 +302,20 @@ export class SolitaireScene extends Container {
       }
     }
 
+    const targetCard = this._draggedCards.cards[0];
+    const destinationCard = intCard;
+
+    // Adapt height of the origin pile
+    if (originCardLocation.deck === 'tableu') {
+      this.tableuDealer?.getPile(originCardLocation.pile).adaptHeight(true);
+    }
+
     this.emit(
       'onDragEnd',
-      this._draggedCards.cards[0].info,
+      targetCard.info,
       originCardLocation,
-      intCard.location
+      destinationCard.location,
+      hasHostCard2Turn
     );
 
     // Drag End
@@ -414,7 +430,11 @@ export class SolitaireScene extends Container {
     });
   }
 
-  public async moveCards(from: CardLocation, to: CardLocation) {
+  public async moveCards(
+    from: CardLocation,
+    to: CardLocation,
+    hasHostCard2Turn: boolean
+  ) {
     const fromDealer = this.getDealerByName(from.deck);
     const toDealer = this.getDealerByName(to.deck);
     const actionCard = fromDealer.seeCard(from.pile, from.position + 1);
@@ -450,9 +470,11 @@ export class SolitaireScene extends Container {
     };
 
     // Turn back the top card on destination pile (Tableu only)
-    if (to.deck === 'tableu') {
+    if (hasHostCard2Turn && to.deck === 'tableu') {
       const pile = toDealer.getPile(to.pile);
-      pile.topCard()?.animateFlip();
+      const topCard = pile.topCard();
+      // Wee need to know whether the need Flip or not
+      topCard?.animateFlip();
     }
 
     // Aaaand move the card!
@@ -480,9 +502,14 @@ export class SolitaireScene extends Container {
         cards.length > 1 ? new Point(0, cardsOffsetY) : undefined
       );
 
-      toDealer.getPile(to.pile).adaptHeight();
+      toDealer.getPile(to.pile).adaptHeight(true);
     } else {
       toDealer.addCards(cards, to.pile || 0);
+    }
+
+    // Adapt height of the source pile
+    if (from.deck === 'tableu') {
+      fromDealer.getPile(from.pile).adaptHeight(true);
     }
   }
 

@@ -72,11 +72,21 @@ export class TableuDealer extends Dealer {
     });
   }
 
-  public async turnTopPileCard(pile: number = 0) {
+  public isTopCardUp(pile: number = 0): boolean {
     const deck = this.getPile(pile);
     const topCard = deck.topCard();
-    if (topCard === null || topCard.isFront) return;
+    return topCard !== null && !topCard.isFront ? true : false;
+  }
+
+  public async turnTopPileCard(pile: number = 0): Promise<boolean> {
+    const deck = this.getPile(pile);
+    const topCard = deck.topCard();
+
+    if (!topCard) return false;
+
     await topCard.animateFlip(0.15);
+
+    return true;
   }
 
   public getDragCards(deckIndex: number, positionIndex: number = 0): Card[] {

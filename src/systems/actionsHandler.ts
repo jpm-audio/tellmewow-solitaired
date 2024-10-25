@@ -13,6 +13,7 @@ export interface CardLocation {
 export interface Action {
   action: Actions;
   card?: CardInfo;
+  hostCard?: { turn: boolean };
   from?: CardLocation;
   to?: CardLocation;
 }

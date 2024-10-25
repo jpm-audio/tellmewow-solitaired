@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./browserAll-Cx-N1zjp.js","./webworkerAll-B1yTfXK6.js","./colorToUniform-BmxvuzQv.js","./WebGPURenderer-BqXfFqs0.js","./SharedSystems-DHeRJ2HQ.js","./WebGLRenderer-bKxQCn5u.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./browserAll-HkkZkSIq.js","./webworkerAll-BH_KrHo7.js","./colorToUniform-DAkvYhkT.js","./WebGPURenderer-CBsUH2Mj.js","./SharedSystems-Bj8KO4Ea.js","./WebGLRenderer-CJVKjomW.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
@@ -299,7 +299,7 @@ const browserExt = {
   },
   test: () => true,
   load: async () => {
-    await __vitePreload(() => import("./browserAll-Cx-N1zjp.js"), true ? __vite__mapDeps([0,1,2]) : void 0, import.meta.url);
+    await __vitePreload(() => import("./browserAll-HkkZkSIq.js"), true ? __vite__mapDeps([0,1,2]) : void 0, import.meta.url);
   }
 };
 const webworkerExt = {
@@ -310,7 +310,7 @@ const webworkerExt = {
   },
   test: () => typeof self !== "undefined" && self.WorkerGlobalScope !== void 0,
   load: async () => {
-    await __vitePreload(() => import("./webworkerAll-B1yTfXK6.js"), true ? __vite__mapDeps([1,2]) : void 0, import.meta.url);
+    await __vitePreload(() => import("./webworkerAll-BH_KrHo7.js"), true ? __vite__mapDeps([1,2]) : void 0, import.meta.url);
   }
 };
 class ObservablePoint {
@@ -9381,7 +9381,7 @@ async function autoDetectRenderer(options) {
     const rendererType = preferredOrder[i2];
     if (rendererType === "webgpu" && await isWebGPUSupported()) {
       const { WebGPURenderer } = await __vitePreload(async () => {
-        const { WebGPURenderer: WebGPURenderer2 } = await import("./WebGPURenderer-BqXfFqs0.js");
+        const { WebGPURenderer: WebGPURenderer2 } = await import("./WebGPURenderer-CBsUH2Mj.js");
         return { WebGPURenderer: WebGPURenderer2 };
       }, true ? __vite__mapDeps([3,2,4]) : void 0, import.meta.url);
       RendererClass = WebGPURenderer;
@@ -9391,7 +9391,7 @@ async function autoDetectRenderer(options) {
       options.failIfMajorPerformanceCaveat ?? AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat
     )) {
       const { WebGLRenderer } = await __vitePreload(async () => {
-        const { WebGLRenderer: WebGLRenderer2 } = await import("./WebGLRenderer-bKxQCn5u.js");
+        const { WebGLRenderer: WebGLRenderer2 } = await import("./WebGLRenderer-CJVKjomW.js");
         return { WebGLRenderer: WebGLRenderer2 };
       }, true ? __vite__mapDeps([5,2,4]) : void 0, import.meta.url);
       RendererClass = WebGLRenderer;
@@ -23962,11 +23962,17 @@ class TableuDealer extends Dealer {
       return false;
     });
   }
+  isTopCardUp(pile = 0) {
+    const deck = this.getPile(pile);
+    const topCard = deck.topCard();
+    return topCard !== null && !topCard.isFront ? true : false;
+  }
   async turnTopPileCard(pile = 0) {
     const deck = this.getPile(pile);
     const topCard = deck.topCard();
-    if (topCard === null || topCard.isFront) return;
+    if (!topCard) return false;
     await topCard.animateFlip(0.15);
+    return true;
   }
   getDragCards(deckIndex, positionIndex = 0) {
     const deck = this.getPile(deckIndex);
@@ -26483,7 +26489,7 @@ class SolitaireScene extends Container {
     });
   }
   onDragEnd(event) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     if (!this._draggedCards) return;
     if (event) {
       this.onDragMove(event);
@@ -26501,26 +26507,31 @@ class SolitaireScene extends Container {
       return;
     }
     const intCard = intersectedCards[0].card;
+    let hasHostCard2Turn = false;
     if (((_c = this._draggedCards.cards[0].location) == null ? void 0 : _c.deck) === "tableu") {
-      (_e = this.tableuDealer) == null ? void 0 : _e.turnTopPileCard(
-        ((_d = this._draggedCards.cards[0].location) == null ? void 0 : _d.pile) || 0
-      );
+      const originPile = ((_d = this._draggedCards.cards[0].location) == null ? void 0 : _d.pile) || 0;
+      hasHostCard2Turn = (_e = this.tableuDealer) == null ? void 0 : _e.isTopCardUp(originPile);
+      if (hasHostCard2Turn) {
+        (_g = this.tableuDealer) == null ? void 0 : _g.turnTopPileCard(
+          ((_f = this._draggedCards.cards[0].location) == null ? void 0 : _f.pile) || 0
+        );
+      }
     }
     const originCardLocation = {
-      deck: (_f = this._draggedCards.cards[0].location) == null ? void 0 : _f.deck,
-      pile: (_g = this._draggedCards.cards[0].location) == null ? void 0 : _g.pile,
-      position: (_h = this._draggedCards.cards[0].location) == null ? void 0 : _h.position
+      deck: (_h = this._draggedCards.cards[0].location) == null ? void 0 : _h.deck,
+      pile: ((_i = this._draggedCards.cards[0].location) == null ? void 0 : _i.pile) || 0,
+      position: (_j = this._draggedCards.cards[0].location) == null ? void 0 : _j.position
     };
-    if (((_i = intCard.location) == null ? void 0 : _i.deck) === "tableu") {
-      (_k = this.tableuDealer) == null ? void 0 : _k.addCards(
+    if (((_k = intCard.location) == null ? void 0 : _k.deck) === "tableu") {
+      (_m = this.tableuDealer) == null ? void 0 : _m.addCards(
         this._draggedCards.cards,
-        ((_j = intCard.location) == null ? void 0 : _j.pile) || 0,
+        ((_l = intCard.location) == null ? void 0 : _l.pile) || 0,
         this._draggedCards.cards.length > 1 ? this._draggedCards.cardsOffset : void 0
       );
     } else {
-      (_m = this.foundationsDealer) == null ? void 0 : _m.addCards(
+      (_o = this.foundationsDealer) == null ? void 0 : _o.addCards(
         this._draggedCards.cards,
-        ((_l = intCard.location) == null ? void 0 : _l.pile) || 0
+        ((_n = intCard.location) == null ? void 0 : _n.pile) || 0
       );
       if (this._draggedCards.cards[0].info.value === 1) {
         sound.play("card-great");
@@ -26528,11 +26539,17 @@ class SolitaireScene extends Container {
         sound.play("card-nice");
       }
     }
+    const targetCard = this._draggedCards.cards[0];
+    const destinationCard = intCard;
+    if (originCardLocation.deck === "tableu") {
+      (_p = this.tableuDealer) == null ? void 0 : _p.getPile(originCardLocation.pile).adaptHeight(true);
+    }
     this.emit(
       "onDragEnd",
-      this._draggedCards.cards[0].info,
+      targetCard.info,
       originCardLocation,
-      intCard.location
+      destinationCard.location,
+      hasHostCard2Turn
     );
     this._draggedCards = null;
     sound.play("card-drop");
@@ -26630,8 +26647,8 @@ class SolitaireScene extends Container {
       });
     });
   }
-  async moveCards(from, to) {
-    var _a, _b;
+  async moveCards(from, to, hasHostCard2Turn) {
+    var _a;
     const fromDealer = this.getDealerByName(from.deck);
     const toDealer = this.getDealerByName(to.deck);
     const actionCard = fromDealer.seeCard(from.pile, from.position + 1);
@@ -26652,9 +26669,10 @@ class SolitaireScene extends Container {
       x: destinationPile.x + toDealer.x,
       y: destinationPile.y + toDealer.y + destinationPile.currentOffset * destinationPile.numCards
     };
-    if (to.deck === "tableu") {
+    if (hasHostCard2Turn && to.deck === "tableu") {
       const pile = toDealer.getPile(to.pile);
-      (_b = pile.topCard()) == null ? void 0 : _b.animateFlip();
+      const topCard = pile.topCard();
+      topCard == null ? void 0 : topCard.animateFlip();
     }
     const tween = gsapWithCSS.to(cards[0], {
       x: destCoords.x,
@@ -26677,9 +26695,12 @@ class SolitaireScene extends Container {
         to.pile,
         cards.length > 1 ? new Point(0, cardsOffsetY) : void 0
       );
-      toDealer.getPile(to.pile).adaptHeight();
+      toDealer.getPile(to.pile).adaptHeight(true);
     } else {
       toDealer.addCards(cards, to.pile || 0);
+    }
+    if (from.deck === "tableu") {
+      fromDealer.getPile(from.pile).adaptHeight(true);
     }
   }
   updateSize(app) {
@@ -27071,12 +27092,13 @@ class GameController extends EventEmitter {
     this._actionsHandler.subscribeAction({
       id: "move",
       callback: async (actionRegister) => {
-        var _a2;
+        var _a2, _b2;
         if (actionRegister.undo) {
           this.disable();
-          await ((_a2 = this._scene) == null ? void 0 : _a2.moveCards(
+          await ((_b2 = this._scene) == null ? void 0 : _b2.moveCards(
             actionRegister.to,
-            actionRegister.from
+            actionRegister.from,
+            (_a2 = actionRegister.hostCard) == null ? void 0 : _a2.turn
           ));
           this.enable();
         }
@@ -27148,11 +27170,12 @@ class GameController extends EventEmitter {
       (_c = this._timer) == null ? void 0 : _c.resume();
     }
   }
-  async _onPlayerEndMove(cardInfo, cardFrom, cardTo) {
+  async _onPlayerEndMove(cardInfo, cardFrom, cardTo, hasHostCard2Turn) {
     var _a;
     await ((_a = this._actionsHandler) == null ? void 0 : _a.do({
       action: "move",
       card: cardInfo,
+      hostCard: { turn: hasHostCard2Turn },
       from: cardFrom,
       to: cardTo
     }));

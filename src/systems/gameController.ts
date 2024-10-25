@@ -126,7 +126,8 @@ export class GameController extends EventEmitter {
           this.disable();
           await this._scene?.moveCards(
             actionRegister.to as CardLocation,
-            actionRegister.from as CardLocation
+            actionRegister.from as CardLocation,
+            actionRegister.hostCard?.turn as boolean
           );
           this.enable();
         }
@@ -210,12 +211,14 @@ export class GameController extends EventEmitter {
   private async _onPlayerEndMove(
     cardInfo: CardInfo,
     cardFrom: CardLocation,
-    cardTo: CardLocation
+    cardTo: CardLocation,
+    hasHostCard2Turn: boolean
   ) {
     // Update Stats
     await this._actionsHandler?.do({
       action: 'move' as Actions,
       card: cardInfo,
+      hostCard: { turn: hasHostCard2Turn },
       from: cardFrom,
       to: cardTo,
     });
