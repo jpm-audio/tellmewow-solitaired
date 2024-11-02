@@ -8,7 +8,7 @@ export class Timer extends EventEmitter {
   protected _isRunning: boolean = false;
   protected _isPaused: boolean = false;
   protected _viewController: HTMLUIController;
-  protected _ticker: Ticker | null = null;
+  protected _ticker!: Ticker;
   protected _elapsedTime: number = 0;
   protected _interval: number = 1000;
   protected _lastTime: number = 0;
@@ -90,7 +90,7 @@ export class Timer extends EventEmitter {
     this._isRunning = true;
     this._lastTime = Date.now();
     this.time = 0;
-    this._ticker?.add(this._updateTime, this);
+    this._ticker.add(this._updateTime, this);
     this._updateViewState();
   }
 
@@ -110,7 +110,7 @@ export class Timer extends EventEmitter {
   public stop() {
     if (!this._isRunning) return;
     this._isRunning = false;
-    this._ticker?.remove(this._updateTime, this);
+    this._ticker.remove(this._updateTime, this);
     this.reset();
   }
 

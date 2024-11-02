@@ -10,8 +10,8 @@ export class LocalStorage {
     return dataString !== null ? JSON.parse(dataString) : null;
   }
 
-  public set(data: string | number | [] | object) {
-    if (data === undefined || data === null) return;
+  public set(data: string | number | [] | object | null) {
+    if (data === undefined || data === null) data = '';
     const dataString = typeof data === 'string' ? data : JSON.stringify(data);
     localStorage.setItem(this._itemId, dataString);
   }

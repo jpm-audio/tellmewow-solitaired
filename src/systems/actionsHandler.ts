@@ -27,8 +27,8 @@ export default class ActionsHandler extends EventEmitter {
   protected _initialized: boolean = false;
   protected _storageId: string = '';
   protected _actions: ActionRegister[] = [];
-  protected _storage: LocalStorage | null = null;
-  protected _virtualPlayer: VirtualPlayer | null = null;
+  protected _storage!: LocalStorage;
+  protected _virtualPlayer!: VirtualPlayer;
 
   public get numTotalActions() {
     return this._actions.length;
@@ -52,9 +52,7 @@ export default class ActionsHandler extends EventEmitter {
   }
 
   protected _save() {
-    if (this._storage !== null) {
-      this._storage.set(this._actions);
-    }
+    this._storage.set(this._actions);
   }
 
   public init(): ActionsHandler {
@@ -62,14 +60,13 @@ export default class ActionsHandler extends EventEmitter {
     this._initialized = true;
 
     // Check for stored actions
-    if (this._storage !== null) {
-      this._actions = this._storage.get() || [];
-    }
+    this._actions = this._storage.get() || [];
+
     return this;
   }
 
   public subscribeAction(interaction: interactionDefinition) {
-    this._virtualPlayer?.addInteraction(interaction);
+    this._virtualPlayer.addInteraction(interaction);
   }
 
   public async do(actionInfo: Action): Promise<ActionsHandler> {
@@ -78,7 +75,7 @@ export default class ActionsHandler extends EventEmitter {
       undo: false,
       redo: false,
     };
-    await this._virtualPlayer?.interact(actionRegister);
+    await this._virtualPlayer.interact(actionRegister);
     this._actions.push(actionRegister);
     this._save();
     return this;
@@ -92,7 +89,7 @@ export default class ActionsHandler extends EventEmitter {
     // Undo the action (inverse from - to)
     if (actionRegister) {
       actionRegister.undo = true;
-      await this._virtualPlayer?.interact(actionRegister);
+      await this._virtualPlayer.interact(actionRegister);
 
       this._save();
     }

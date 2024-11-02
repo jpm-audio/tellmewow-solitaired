@@ -17,7 +17,8 @@ import { DeckBase } from '../components/deckBase';
 import { StateRegister } from '../systems/stateHandler';
 import { CardLocation } from '../systems/actionsHandler';
 import gsap from 'gsap';
-import { sound } from '@pixi/sound';
+import { Game } from '../systems/game';
+import { GameEvents } from '../constants/gameEvents';
 
 interface DragggingCards {
   cards: Card[];
@@ -42,10 +43,10 @@ export class SolitaireScene extends Container {
     fundations: 4,
     tableuCols: 7,
   };
-  public cardsDealer: CardsDealer | null = null;
-  public deckDealer: DeckDealer | null = null;
-  public foundationsDealer: FoundationsDealer | null = null;
-  public tableuDealer: TableuDealer | null = null;
+  public cardsDealer!: CardsDealer;
+  public deckDealer!: DeckDealer;
+  public foundationsDealer!: FoundationsDealer;
+  public tableuDealer!: TableuDealer;
 
   public get isDragging() {
     return this._draggedCards !== null;
@@ -81,13 +82,13 @@ export class SolitaireScene extends Container {
   }
 
   private _getDeckBase(variant: number = 0) {
-    const aCard = this.cardsDealer?.getCardByIndex(0);
+    const aCard = this.cardsDealer.getCardByIndex(0);
     return DeckBase.base(variant, aCard?.width || 100, aCard?.height || 100);
   }
 
   private _createDecks() {
     const gap = this._config.decksGap;
-    const aCard = this.cardsDealer?.getCardByIndex(0);
+    const aCard = this.cardsDealer.getCardByIndex(0);
     const cardHeight = aCard?.height || 100;
     const cardWidth = aCard?.width || 100;
 
@@ -183,7 +184,7 @@ export class SolitaireScene extends Container {
 
     // Store Card Origin
     const card = event.target as Card;
-    const coords = this.cardsDealer?.getCardGlobalCoords(card) as PointData;
+    const coords = this.cardsDealer.getCardGlobalCoords(card) as PointData;
     this._draggedCards.cardOrigin.copyFrom(coords);
 
     // Check if the card is draggable
@@ -210,8 +211,7 @@ export class SolitaireScene extends Container {
       this.addChild(card);
     });
 
-    sound.play('card-touch');
-
+    Game.bus.emit(GameEvents.TOUCH);
     this.emit('onDragStart', this._draggedCards);
   }
 
@@ -240,7 +240,7 @@ export class SolitaireScene extends Container {
       this.onDragMove(event);
     }
 
-    const intersectedTableu = this.tableuDealer?.checkIntersections(
+    const intersectedTableu = this.tableuDealer.checkIntersections(
       this._draggedCards.cards[0]
     ) as IntersectionResult[];
     const intersectedFoundations = this.foundationsDealer?.checkIntersections(
@@ -265,10 +265,10 @@ export class SolitaireScene extends Container {
     if (this._draggedCards.cards[0].location?.deck === 'tableu') {
       // Check whether the host card actually need turning up
       const originPile = this._draggedCards.cards[0].location?.pile || 0;
-      hasHostCard2Turn = this.tableuDealer?.isTopCardUp(originPile) as boolean;
+      hasHostCard2Turn = this.tableuDealer.isTopCardUp(originPile) as boolean;
 
       if (hasHostCard2Turn) {
-        this.tableuDealer?.turnTopPileCard(
+        this.tableuDealer.turnTopPileCard(
           this._draggedCards.cards[0].location?.pile || 0
         );
       }
@@ -282,7 +282,7 @@ export class SolitaireScene extends Container {
 
     // Add Card into destination Dealer
     if (intCard.location?.deck === 'tableu') {
-      this.tableuDealer?.addCards(
+      this.tableuDealer.addCards(
         this._draggedCards.cards,
         intCard.location?.pile || 0,
         this._draggedCards.cards.length > 1
@@ -290,16 +290,14 @@ export class SolitaireScene extends Container {
           : undefined
       );
     } else {
-      this.foundationsDealer?.addCards(
+      this.foundationsDealer.addCards(
         this._draggedCards.cards,
         intCard.location?.pile || 0
       );
 
-      if (this._draggedCards.cards[0].info.value === 1) {
-        sound.play('card-great');
-      } else {
-        sound.play('card-nice');
-      }
+      Game.bus.emit(GameEvents.SUCCESS, {
+        level: this._draggedCards.cards[0].info.value,
+      });
     }
 
     const targetCard = this._draggedCards.cards[0];
@@ -307,7 +305,7 @@ export class SolitaireScene extends Container {
 
     // Adapt height of the origin pile
     if (originCardLocation.deck === 'tableu') {
-      this.tableuDealer?.getPile(originCardLocation.pile).adaptHeight(true);
+      this.tableuDealer.getPile(originCardLocation.pile).adaptHeight(true);
     }
 
     this.emit(
@@ -321,7 +319,7 @@ export class SolitaireScene extends Container {
     // Drag End
     this._draggedCards = null;
 
-    sound.play('card-drop');
+    Game.bus.emit(GameEvents.DROP);
   }
 
   public onDragCancel() {
@@ -331,101 +329,83 @@ export class SolitaireScene extends Container {
     const deckName = cardLocation?.deck;
 
     if (deckName === 'tableu') {
-      this.tableuDealer?.addCards(
+      this.tableuDealer.addCards(
         this._draggedCards.cards,
         cardLocation?.pile || 0
       );
     }
     if (deckName === 'foundation') {
-      this.foundationsDealer?.addCards(
+      this.foundationsDealer.addCards(
         this._draggedCards.cards,
         cardLocation?.pile || 0
       );
     }
     if (deckName === 'waste') {
-      this.deckDealer?.addCards(this._draggedCards.cards, 1);
+      this.deckDealer.addCards(this._draggedCards.cards, 1);
     }
 
     this._draggedCards = null;
 
+    Game.bus.emit(GameEvents.DROP);
     this.emit('onDragCancel');
-    sound.play('card-drop');
   }
 
   public shuffle() {
     if (!this._isInitialized) return;
 
     this.reset();
-    this.cardsDealer?.shuffle();
+    this.cardsDealer.shuffle();
 
     // Deal the cards
     this.dealCards();
   }
 
   public dealCards() {
-    if (this.cardsDealer) {
-      for (let i = 0; i < this._config.tableuCols; i++) {
-        const cards = this.cardsDealer?.getHandCards(i + 1);
-        this.tableuDealer?.initDeck(cards, i);
-      }
-      const stock = this.cardsDealer?.getStock();
-
-      this.deckDealer?.addCards(stock);
+    for (let i = 0; i < this._config.tableuCols; i++) {
+      const cards = this.cardsDealer.getHandCards(i + 1);
+      this.tableuDealer.initDeck(cards, i);
     }
+    const stock = this.cardsDealer.getStock();
+
+    this.deckDealer.addCards(stock);
   }
 
   public setCardsState({ cards }: StateRegister) {
-    if (!this.cardsDealer)
-      throw new Error('SolitaireScene::setCardsState - cardsDealer is null');
-
     // Set Stock/Waste decks
     cards.dealer.forEach((deckInfo, deckIndex) => {
       deckInfo.forEach((cardInfo) => {
-        if (!this.cardsDealer)
-          throw new Error(
-            'SolitaireScene::setCardsState - cardsDealer is null'
-          );
         const card = this.cardsDealer.getCardByInfo(cardInfo.info);
         if (!card)
           throw new Error(
             'SolitaireScene::setCardsState - card retrived is null'
           );
-        this.deckDealer?.addCards([card], deckIndex);
+        this.deckDealer.addCards([card], deckIndex);
       });
     });
 
     // Set Foundations decks
     cards.foundations.forEach((deckInfo, deckIndex) => {
       deckInfo.forEach((cardInfo) => {
-        if (!this.cardsDealer)
-          throw new Error(
-            'SolitaireScene::setCardsState - cardsDealer is null'
-          );
-
         const card = this.cardsDealer.getCardByInfo(cardInfo.info);
         if (!card)
           throw new Error(
             'SolitaireScene::setCardsState - card retrived is null'
           );
         card.set(cardInfo.info.way);
-        this.foundationsDealer?.addCards([card], deckIndex);
+        this.foundationsDealer.addCards([card], deckIndex);
       });
     });
 
     //Set Tableu decks
     cards.tableu.forEach((deckInfo, deckIndex) => {
       deckInfo.forEach((cardInfo) => {
-        if (!this.cardsDealer)
-          throw new Error(
-            'SolitaireScene::setCardsState - cardsDealer is null'
-          );
         const card = this.cardsDealer.getCardByInfo(cardInfo.info);
         if (!card)
           throw new Error(
             'SolitaireScene::setCardsState - card retrived is null'
           );
         card.set(cardInfo.info.way);
-        this.tableuDealer?.addCards([card], deckIndex);
+        this.tableuDealer.addCards([card], deckIndex);
       });
     });
   }
@@ -441,7 +421,7 @@ export class SolitaireScene extends Container {
     if (!actionCard) return;
 
     // Get initial coords of the card
-    const coords = this.cardsDealer?.getCardGlobalCoords(
+    const coords = this.cardsDealer.getCardGlobalCoords(
       actionCard
     ) as PointData;
     const cardsOffsetY = fromDealer.getPile(from.pile).currentOffset;
@@ -523,9 +503,9 @@ export class SolitaireScene extends Container {
   }
 
   public reset() {
-    this.deckDealer?.reset();
-    this.foundationsDealer?.reset();
-    this.tableuDealer?.reset();
+    this.deckDealer.reset();
+    this.foundationsDealer.reset();
+    this.tableuDealer.reset();
   }
 
   public enable() {

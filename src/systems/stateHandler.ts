@@ -42,8 +42,8 @@ export class StateHandler extends EventEmitter {
   protected _initialized: boolean = false;
   protected _currentGameStorageId: string = '';
   protected _state: StateRegister | null = null;
-  protected _currentGameStorage: LocalStorage | null = null;
-  protected _initalGameStorage: LocalStorage | null = null;
+  protected _currentGameStorage!: LocalStorage;
+  protected _initalGameStorage!: LocalStorage;
 
   public get state() {
     return this._state !== null ? this._state : initState;
@@ -74,9 +74,7 @@ export class StateHandler extends EventEmitter {
   }
 
   protected _save() {
-    if (this._currentGameStorage !== null && this._state !== null) {
-      this._currentGameStorage.set(this._state);
-    }
+    this._currentGameStorage.set(this._state);
   }
 
   public init(): StateHandler {
@@ -84,24 +82,18 @@ export class StateHandler extends EventEmitter {
     this._initialized = true;
 
     // Check for stored Game State
-    if (this._currentGameStorage !== null) {
-      this._state = this._currentGameStorage.get() || initState;
-    }
+    this._state = this._currentGameStorage.get() || initState;
 
     return this;
   }
 
   public saveInitalState() {
-    if (this._initalGameStorage !== null && this._state !== null) {
-      this._initalGameStorage.set(this._state);
-    }
+    this._initalGameStorage.set(this._state);
   }
 
   public loadInitialState() {
-    if (this._initalGameStorage !== null) {
-      this._state = this._initalGameStorage.get() || null;
-      this._save();
-    }
+    this._state = this._initalGameStorage.get() || null;
+    this._save();
     return this;
   }
 

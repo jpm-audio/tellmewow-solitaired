@@ -2,11 +2,10 @@ import './global.css';
 import { Application, Container, Sprite } from 'pixi.js';
 import gsap from 'gsap';
 import PixiPlugin from 'gsap/PixiPlugin';
-import { GameController } from './systems/gameController';
+import { Game } from './systems/game';
 
 (async () => {
   const app = new Application();
-  const game = new GameController(app);
   const canvasContainerEl: HTMLElement | null =
     document.querySelector('#canvas_container');
 
@@ -23,5 +22,5 @@ import { GameController } from './systems/gameController';
   PixiPlugin.registerPIXI({ Container, Sprite });
 
   // Init Game
-  await game.init();
+  await Game.game.init(app);
 })();

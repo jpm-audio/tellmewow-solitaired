@@ -2,7 +2,8 @@ import { Point, Sprite, Texture } from 'pixi.js';
 import CARD_SUITS, { CardSuit } from '../constants/cards';
 import { CardBase } from './cardBase';
 import CardFlipAnimation from '../animations/cardFlipAnimation';
-import { sound } from '@pixi/sound';
+import { Game } from '../systems/game';
+import { GameEvents } from '../constants/gameEvents';
 
 export type CardInfo = {
   suit: CardSuit;
@@ -68,7 +69,11 @@ class Card extends CardBase {
     this._flipAnimation.duration = duration;
     this._flipAnimation.scale = { x: 0, y: originalScale };
 
-    sound.play('card-flip');
+    Game.bus.emit(GameEvents.ANIMATION, {
+      name: 'cardFlip',
+      type: 'tween',
+      duration: duration,
+    });
     await this._flipAnimation.addPlay(this, from, to, () => this.flip());
   }
 
