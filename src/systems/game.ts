@@ -9,6 +9,7 @@ import { CardInfo } from '../components/card';
 import debounce from '../utils/debounce';
 import { AudioController } from './audioController';
 import { GameEvents } from '../constants/gameEvents';
+import { GAME_CONFIG } from '../constants/gameConfig';
 
 export class Game extends EventEmitter {
   private static _instance: null | Game = null;
@@ -58,7 +59,7 @@ export class Game extends EventEmitter {
     Assets.add([
       {
         alias: 'main',
-        src: `assets/sprites/main-0${
+        src: `${GAME_CONFIG.spritesBasePath}${
           this.resolution === 1 ? '' : `x${this.resolution}`
         }.json`,
       },
@@ -68,7 +69,6 @@ export class Game extends EventEmitter {
     // Start scene
     this._scene = new SolitaireScene();
     this._app.stage.addChild(this._scene);
-
     await this._scene.init();
 
     // Resize Handling
@@ -82,6 +82,12 @@ export class Game extends EventEmitter {
     this._timer.on('timeupdate', (time) => {
       this._stateHandler.setState({ timeElapsed: time });
     });
+  }
+
+  private async _initAudio() {
+    this._audio = new AudioController();
+    await this._audio.init(GAME_CONFIG.audioBasePath);
+    this._audio.setActions();
   }
 
   private _initActions() {
@@ -298,15 +304,10 @@ export class Game extends EventEmitter {
 
     // Init View
     await this._initView();
-
     // Init Audio
-    this._audio = new AudioController();
-    await this._audio.init();
-    this._audio.setActions();
-
+    await this._initAudio();
     // Init Actions
     this._initActions();
-
     // Init State
     this._initState();
 

@@ -15,13 +15,23 @@ export class AudioController {
     this._audio = new AudioAdapter();
   }
 
-  public async init() {
-    return new Promise((resolve, reject) => {
+  public async init(basePath: string = '') {
+    const spriteUrls = Array.isArray(gameAudioData.url)
+      ? gameAudioData.url
+      : [gameAudioData.url];
+    const parsedSpriteUrls: string[] = spriteUrls.map(
+      (url) => `${basePath}/${url}`
+    );
+
+    await new Promise((resolve, reject) => {
       this._audio.add({
         [this._soundAlias]: {
           ...gameAudioData,
           ...{
+            url: parsedSpriteUrls,
+            preload: true,
             loaded: (err, sound) => {
+              console.log(err, sound);
               if (err) reject(err);
               else resolve(sound);
             },
