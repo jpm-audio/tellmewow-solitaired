@@ -2,6 +2,7 @@ export enum GameEvents {
   READY = 'gameReady',
   NEW = 'gameNew',
   RESTART = 'gameRestart',
+  ACTION = 'gameAction',
   UNDO = 'gameUndo',
   TOUCH = 'gameTouch',
   DROP = 'gameDrop',

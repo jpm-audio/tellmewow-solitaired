@@ -38,7 +38,7 @@ export class FoundationsDealer extends Dealer {
 
     // Filter for cards with +1 value and different color
     return intersectedCards.filter((result) => {
-      if (result.card.constructor.name === 'Card') {
+      if ('whatIAm' in result.card && result.card.whatIAm === 'Card') {
         const resultCard = result.card as Card;
         return (
           card.info.value === resultCard.info.value + 1 &&
@@ -46,7 +46,7 @@ export class FoundationsDealer extends Dealer {
         );
       }
 
-      if (result.card.constructor.name === 'CardBase') {
+      if ('whatIAm' in result.card && result.card.whatIAm === 'CardBase') {
         // Filter for card is a "A", value of 1
         return card.info.value === 1;
       }

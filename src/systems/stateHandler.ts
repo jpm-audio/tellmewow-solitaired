@@ -14,14 +14,14 @@ export interface StatsState {
   passthrus: number;
 }
 
+export interface SceneState {
+  [key: string]: CardState[][];
+}
+
 export interface StateRegister {
   timeElapsed: number;
   stats: StatsState;
-  cards: {
-    dealer: CardState[][];
-    foundations: CardState[][];
-    tableu: CardState[][];
-  };
+  cards: SceneState;
 }
 
 const initState: StateRegister = {
@@ -31,11 +31,7 @@ const initState: StateRegister = {
     stock: 0,
     passthrus: 0,
   },
-  cards: {
-    dealer: [],
-    foundations: [],
-    tableu: [],
-  },
+  cards: {},
 };
 
 export class StateHandler extends EventEmitter {

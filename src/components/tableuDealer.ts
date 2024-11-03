@@ -54,7 +54,7 @@ export class TableuDealer extends Dealer {
 
     // Filter intersected by Dealer Rules
     return intersectedCards.filter((result) => {
-      if (result.card.constructor.name === 'Card') {
+      if ('whatIAm' in result.card && result.card.whatIAm === 'Card') {
         // Filter for cards with +1 value and different color
         const resultCard = result.card as Card;
         return (
@@ -63,7 +63,7 @@ export class TableuDealer extends Dealer {
         );
       }
 
-      if (result.card.constructor.name === 'CardBase') {
+      if ('whatIAm' in result.card && result.card.whatIAm === 'CardBase') {
         // Filter for card is a "K", value of 13
         return card.info.value === 13;
       }

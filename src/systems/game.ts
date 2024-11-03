@@ -2,7 +2,7 @@ import { Application, Assets, EventEmitter } from 'pixi.js';
 import ActionsHandler, { ActionRegister, CardLocation } from './actionsHandler';
 import { SolitaireScene } from '../scenes/solitaireScene';
 import { StateHandler, StatsState } from './stateHandler';
-import { Actions, Decks } from '../constants/cards';
+import { Actions } from '../constants/cards';
 import { HTMLUIController } from './HTMLUIController';
 import { Timer } from './timer';
 import { CardInfo } from '../components/card';
@@ -10,6 +10,9 @@ import debounce from '../utils/debounce';
 import { AudioController } from './audioController';
 import { GameEvents } from '../constants/gameEvents';
 import { GAME_CONFIG } from '../constants/gameConfig';
+import { SceneBuilderTurn1 } from '../scenes/sceneBuilderTurn1';
+import SceneBuilder from '../scenes/sceneBuilder';
+import { GameAction } from '../scenes/gameActions';
 
 export class Game extends EventEmitter {
   private static _instance: null | Game = null;
@@ -69,7 +72,10 @@ export class Game extends EventEmitter {
     // Start scene
     this._scene = new SolitaireScene();
     this._app.stage.addChild(this._scene);
-    await this._scene.init();
+
+    const sceneBuilder = new SceneBuilderTurn1();
+    await this._scene.init(sceneBuilder);
+    this._initActions(sceneBuilder);
 
     // Resize Handling
     this._handleResize();
@@ -90,94 +96,41 @@ export class Game extends EventEmitter {
     this._audio.setActions();
   }
 
-  private _initActions() {
-    this._actionsHandler = new ActionsHandler('moves').init();
+  private _initActions(sceneBuilder: SceneBuilder) {
+    this._actionsHandler.reset();
 
-    // SUBSCRIBE ACTIONS
-    this._actionsHandler.subscribeAction({
-      id: 'deal',
-      callback: async (actionRegister: ActionRegister) => {
-        if (actionRegister.undo) {
+    // SUBSCRIBE SPECIFIC ACTIONS FROM SCENE BUILDER
+    sceneBuilder.gameActions.forEach((gameAction: GameAction) => {
+      this._actionsHandler.subscribeAction({
+        id: gameAction.id,
+        callback: async (actionRegister: ActionRegister) => {
           this.disable();
-          await this._scene.deckDealer.undeal();
+          await gameAction.callback(actionRegister, sceneBuilder);
           this.enable();
-        } else {
-          await this._scene.deckDealer.deal();
-        }
 
-        // Update Stats
-        this._stats.moves += 1;
-        if (!this._scene.deckDealer) return;
-        const stockDeck = this._scene.deckDealer.getPile(0);
-        if (!stockDeck) return;
-        this._stats.stock = stockDeck.numCards;
+          this._stats.moves += gameAction.moveAdd;
+          this._stats.passthrus += gameAction.passthrusAdd;
 
-        this.updateGameState();
-      },
+          this.updateGameState();
+        },
+      });
     });
-    this._actionsHandler.subscribeAction({
-      id: 'redeal',
-      callback: async (actionRegister: ActionRegister) => {
-        if (!this._scene || !this._scene.deckDealer) return;
 
-        if (actionRegister.undo) {
-          this.disable();
-          await this._scene.deckDealer.unredeal();
-          this.enable();
-        } else {
-          await this._scene.deckDealer.redeal();
-        }
-
-        const stockDeck = this._scene.deckDealer.getPile(0);
-
-        // Update Stats
-        this._stats.moves += 1;
-        this._stats.passthrus += 1;
-        if (!stockDeck) return;
-        this._stats.stock = stockDeck.numCards;
-        this.updateGameState();
-      },
-    });
+    //SUBSCRIBE GENERAL ACTIONS FROM GAME
     this._actionsHandler.subscribeAction({
       id: 'move',
       callback: async (actionRegister: ActionRegister) => {
         if (actionRegister.undo) {
-          this.disable();
           await this._scene.moveCards(
             actionRegister.to as CardLocation,
             actionRegister.from as CardLocation,
             actionRegister.hostCard?.turn as boolean
           );
-          this.enable();
         }
+
         this._stats.moves += 1;
         this.updateGameState();
       },
-    });
-
-    // EVENTS EXECUTION
-    this._scene.deckDealer.on('stock.pointerdown', (deckDealer) => {
-      const isDeal = deckDealer.stock.numCards > 0;
-      const actionInfo = isDeal
-        ? {
-            action: 'deal' as Actions,
-            card: deckDealer.stock.topCard().info,
-            from: {
-              deck: 'stock' as Decks,
-              pile: 0,
-              position: deckDealer.stock.numCards - 1,
-            },
-            to: {
-              deck: 'waste' as Decks,
-              pile: 1,
-              position: deckDealer.waste.numCards,
-            },
-          }
-        : {
-            action: 'redeal' as Actions,
-          };
-      this._actionsHandler.do(actionInfo);
-      this._onPlayerPlaying();
     });
   }
 
@@ -189,6 +142,7 @@ export class Game extends EventEmitter {
     this._scene.on('onDragStart', this._onPlayerPlaying, this);
     this._scene.on('onDragEnd', this._onPlayerEndMove, this);
     this._stateHandler.on('stateChange', this.onStatsChange, this);
+    Game.bus.on(GameEvents.WIN, this._winGame, this);
 
     // Buttons
     if (!this._htmlUIController.buttons) return;
@@ -217,6 +171,11 @@ export class Game extends EventEmitter {
         'pointerdown',
         () => this._newGame()
       );
+  }
+
+  private _onAction(action: ActionRegister) {
+    this._actionsHandler.do(action);
+    this._onPlayerPlaying();
   }
 
   private _onPlayerPlaying() {
@@ -256,8 +215,8 @@ export class Game extends EventEmitter {
     this._stats.passthrus = currentState.stats.passthrus;
     this.onStatsChange();
 
-    // Update Dealers
-    this._scene.setCardsState(currentState);
+    // Set the game state
+    this._scene.setGame(currentState);
   }
 
   private _newGame() {
@@ -268,7 +227,7 @@ export class Game extends EventEmitter {
     this._stats.moves = 0;
     this._stats.stock = 0;
     this._stats.passthrus = 0;
-    this._scene.shuffle();
+    this._scene.newGame();
     this.updateGameState();
     this._stateHandler.saveInitalState();
     this._actionsHandler.reset();
@@ -293,7 +252,6 @@ export class Game extends EventEmitter {
   private _winGame() {
     this.disable();
     this._htmlUIController.openWinOverlay();
-    Game.bus.emit(GameEvents.WIN);
   }
 
   public async init(pixiApp: Application) {
@@ -302,14 +260,15 @@ export class Game extends EventEmitter {
 
     this._app = pixiApp;
 
+    // Init Actions
+    this._actionsHandler = new ActionsHandler('moves').init();
+    Game.bus.on(GameEvents.ACTION, this._onAction, this);
+    // Init State
+    this._initState();
     // Init View
     await this._initView();
     // Init Audio
     await this._initAudio();
-    // Init Actions
-    this._initActions();
-    // Init State
-    this._initState();
 
     // Start or Set a Game
     if (this._stateHandler.hasGameSet) {
@@ -328,15 +287,10 @@ export class Game extends EventEmitter {
   }
 
   public updateGameState() {
-    if (
-      !this._timer ||
-      !this._stateHandler ||
-      !this._scene ||
-      !this._scene.foundationsDealer ||
-      !this._scene.tableuDealer ||
-      !this._scene.deckDealer
-    )
-      return;
+    if (!this._timer || !this._stateHandler || !this._scene) return;
+
+    // Update Stats
+    this._stats.stock = this._scene.stock;
 
     this._stateHandler.setState({
       timeElapsed: this._timer.time,
@@ -345,17 +299,8 @@ export class Game extends EventEmitter {
         stock: this._stats.stock,
         passthrus: this._stats.passthrus,
       },
-      cards: {
-        dealer: this._scene.deckDealer.info,
-        foundations: this._scene.foundationsDealer.info,
-        tableu: this._scene.tableuDealer.info,
-      },
+      cards: this._scene.info,
     });
-
-    // Check for win
-    if (this._scene.foundationsDealer.checkWin()) {
-      this._winGame();
-    }
   }
 
   public onStatsChange() {

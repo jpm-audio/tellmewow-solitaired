@@ -17,6 +17,9 @@ class Card extends CardBase {
   protected _front: Sprite;
   protected _flipAnimation: CardFlipAnimation;
   protected _defaultFlipAnimationDuration: number = 0.15;
+  public get whatIAm() {
+    return 'Card';
+  }
 
   public get info() {
     return this._info;

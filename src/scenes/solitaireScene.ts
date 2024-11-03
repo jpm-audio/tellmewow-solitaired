@@ -2,77 +2,76 @@ import {
   Application,
   Container,
   FederatedPointerEvent,
+  Graphics,
   Point,
   PointData,
-  Sprite,
+  Rectangle,
 } from 'pixi.js';
-import CARD_SUITS, { Decks } from '../constants/cards';
-import { DeckDealer } from '../components/deckDealer';
-import { FoundationsDealer } from '../components/foundationsDealer';
-import { TableuDealer } from '../components/tableuDealer';
-import { CardsDealer } from '../systems/cardsDealer';
 import Card from '../components/card';
-import { Dealer, IntersectionResult } from '../components/dealer';
-import { DeckBase } from '../components/deckBase';
-import { StateRegister } from '../systems/stateHandler';
+import { Dealer } from '../components/dealer';
+import { SceneState, StateRegister } from '../systems/stateHandler';
 import { CardLocation } from '../systems/actionsHandler';
 import gsap from 'gsap';
 import { Game } from '../systems/game';
 import { GameEvents } from '../constants/gameEvents';
+import SceneBuilder from './sceneBuilder';
 
 interface DragggingCards {
   cards: Card[];
-  cardOrigin: Point;
-  clientOrigin: Point;
-  cardsOffset: Point;
+  cardOrigins: PointData[];
+  clientOrigin: PointData;
 }
 
 export class SolitaireScene extends Container {
   protected _isInitialized: boolean = false;
   protected _draggedCards: DragggingCards | null = null;
-  protected _draggingBackground: Sprite | null = null;
+  protected _draggingBackground: Graphics | null = null;
+  protected _sceneBuilder!: SceneBuilder;
+
   private _config = {
-    backTexture: 'back_red.png',
-    baseTexture: 'card_base-2.png',
-    redoTexture: 'redo.png',
-    baseLogoTexture: 'logo-black.png',
-    frame: { width: 2904, height: 1805 },
-    card: { width: 254, height: 576 },
-    decksGap: 6,
-    decksOffset: { tableu: { x: 0, y: 102 } },
-    fundations: 4,
-    tableuCols: 7,
+    frame: new Rectangle(0, 0, 2904, 1805),
   };
-  public cardsDealer!: CardsDealer;
-  public deckDealer!: DeckDealer;
-  public foundationsDealer!: FoundationsDealer;
-  public tableuDealer!: TableuDealer;
 
   public get isDragging() {
     return this._draggedCards !== null;
+  }
+
+  public get info(): SceneState {
+    if (!this._sceneBuilder) return {};
+    return this._sceneBuilder.getInfo();
+  }
+
+  public get stock() {
+    return this._sceneBuilder.getStock();
   }
 
   constructor() {
     super();
   }
 
-  public async init() {
+  public async init(sceneBuilder: SceneBuilder) {
     if (this._isInitialized) return;
     this._isInitialized = true;
 
-    this._draggingBackground = Sprite.from(this._config.baseTexture);
-    this._draggingBackground.alpha = 0;
-    this._draggingBackground.width = this._config.frame.width;
-    this._draggingBackground.height = this._config.frame.height;
+    // Create Dragging Background
+    this._draggingBackground = new Graphics();
+    this._draggingBackground.fillStyle = { color: 0x000000, alpha: 1 };
+    this._draggingBackground.rect(
+      0,
+      0,
+      this._config.frame.width,
+      this._config.frame.height
+    );
     this.addChild(this._draggingBackground);
 
-    // CARDS
-    this.cardsDealer = new CardsDealer();
-    this.cardsDealer.init(CARD_SUITS);
+    // BUILD SCENE
+    this._sceneBuilder = sceneBuilder;
+    this._sceneBuilder.create({
+      scene: this,
+      frame: this._config.frame,
+    });
 
-    // DECK DEALERS
-    this._createDecks();
-
+    // SET EVENTS
     this.onpointerdown = this.onDragStart.bind(this);
     this.onpointermove = this.onDragMove.bind(this);
     this.onpointerup = this.onDragEnd.bind(this);
@@ -81,333 +80,128 @@ export class SolitaireScene extends Container {
     this.eventMode = 'static';
   }
 
-  private _getDeckBase(variant: number = 0) {
-    const aCard = this.cardsDealer.getCardByIndex(0);
-    return DeckBase.base(variant, aCard?.width || 100, aCard?.height || 100);
-  }
-
-  private _createDecks() {
-    const gap = this._config.decksGap;
-    const aCard = this.cardsDealer.getCardByIndex(0);
-    const cardHeight = aCard?.height || 100;
-    const cardWidth = aCard?.width || 100;
-
-    // Deck Dealer
-    this.deckDealer = new DeckDealer({
-      dealAnimation: {
-        duration: 0.15,
-      },
-      deck: {
-        amount: 2,
-        padding: gap,
-        gap: gap,
-        width: cardWidth,
-        height: cardHeight,
-      },
-      bases: [this._getDeckBase(2), this._getDeckBase()],
-    });
-
-    // Foundations Dealer
-    this.foundationsDealer = new FoundationsDealer({
-      deck: {
-        amount: 4,
-        padding: gap,
-        gap: gap,
-        width: cardWidth,
-        height: cardHeight,
-      },
-      bases: [
-        this._getDeckBase(1),
-        this._getDeckBase(1),
-        this._getDeckBase(1),
-        this._getDeckBase(1),
-      ],
-    });
-    this.foundationsDealer.x = 3 * cardWidth + 3 * gap;
-
-    // Tableu Dealer
-    const maxHeight = this._config.frame.height - cardHeight - 4 * gap;
-    this.tableuDealer = new TableuDealer(
-      {
-        deck: {
-          amount: 7,
-          padding: gap,
-          gap: gap,
-          width: cardWidth,
-          height: cardHeight,
-          offset: this._config.decksOffset.tableu,
-        },
-        bases: [
-          this._getDeckBase(),
-          this._getDeckBase(),
-          this._getDeckBase(),
-          this._getDeckBase(),
-          this._getDeckBase(),
-          this._getDeckBase(),
-          this._getDeckBase(),
-        ],
-      },
-      maxHeight
-    );
-    this.tableuDealer.y = gap + cardHeight;
-
-    this.addChild(this.tableuDealer);
-    this.addChild(this.foundationsDealer);
-    this.addChild(this.deckDealer);
-  }
-
-  public getDealerByName(name: Decks): Dealer {
-    switch (name) {
-      case 'foundation':
-        return this.foundationsDealer as Dealer;
-      case 'tableu':
-        return this.tableuDealer as Dealer;
-      default:
-        return this.deckDealer as Dealer;
-    }
-  }
-
   public onDragStart(event: FederatedPointerEvent) {
-    if (event.target.constructor.name !== 'Card') return;
+    if (!('whatIAm' in event.target) || event.target.whatIAm !== 'Card') return;
 
     event.stopPropagation();
 
-    this._draggedCards = {
-      cards: [],
-      cardOrigin: new Point(),
-      clientOrigin: new Point(),
-      cardsOffset: new Point(),
-    };
+    // Try to take the card or cards from the origin pile
+    const eventCard = event.target as Card;
+    const cardLocation = eventCard.location as CardLocation;
+    const cards = this._sceneBuilder.takeCards(cardLocation);
 
-    // Store Client Origin
-    this._draggedCards.clientOrigin.copyFrom(event.getLocalPosition(this));
-
-    // Store Card Origin
-    const card = event.target as Card;
-    const coords = this.cardsDealer.getCardGlobalCoords(card) as PointData;
-    this._draggedCards.cardOrigin.copyFrom(coords);
-
-    // Check if the card is draggable
-    if (!coords) return;
-    const cardLocation = card.location;
-    const deckName = cardLocation?.deck;
-    if (!deckName || !cardLocation) {
+    // Check if we actually took any card
+    if (!cards.length) {
       this.onDragCancel();
       return;
     }
 
-    // Get the dragged cards
-    const dealer = this.getDealerByName(deckName);
-    const pileOffset = dealer.getPile(cardLocation.pile).currentOffset;
-    this._draggedCards.cards = dealer.getDragCards(
-      cardLocation.pile,
-      cardLocation.position
-    );
-    this._draggedCards.cardsOffset.y = pileOffset;
+    // Prepare the drag info
+    this._draggedCards = {
+      cards: [],
+      cardOrigins: [],
+      clientOrigin: new Point(),
+    };
 
-    this._draggedCards.cards.forEach((card, index) => {
-      card.y = coords.y + pileOffset * index;
-      card.x = coords.x;
+    // Prepare the cards at the origin position
+    cards.forEach((card) => {
+      this._draggedCards?.cardOrigins.push(card.position.clone());
       this.addChild(card);
     });
 
-    Game.bus.emit(GameEvents.TOUCH);
+    // Notify Drag by events
+    Game.bus.emit(GameEvents.TOUCH, this._draggedCards);
     this.emit('onDragStart', this._draggedCards);
   }
 
   public onDragMove(event: FederatedPointerEvent) {
     if (!this._draggedCards) return;
 
-    const newCoords = new Point(
-      this._draggedCards.cardOrigin.x +
-        (event.getLocalPosition(this).x - this._draggedCards.clientOrigin.x),
-      this._draggedCards.cardOrigin.y +
-        (event.getLocalPosition(this).y - this._draggedCards.clientOrigin.y)
-    );
+    // Calculate client displacement "delta"
+    const deltaX =
+      event.getLocalPosition(this).x - this._draggedCards.clientOrigin.x;
+    const deltaY =
+      event.getLocalPosition(this).y - this._draggedCards.clientOrigin.y;
 
+    // Update Cards position
     this._draggedCards.cards.forEach((card, index) => {
       if (this._draggedCards === null) return;
-      card.y = newCoords.y + this._draggedCards.cardsOffset.y * index;
-      card.x = newCoords.x;
-      this.addChild(card);
+      const cardOrigin = this._draggedCards.cardOrigins[index];
+      card.x = cardOrigin.x + deltaX;
+      card.y = cardOrigin.y + deltaY;
     });
   }
 
-  public onDragEnd(event?: FederatedPointerEvent) {
+  public onDragEnd(event: FederatedPointerEvent) {
     if (!this._draggedCards) return;
 
-    if (event) {
-      this.onDragMove(event);
-    }
+    // Make the last move before the drop
+    this.onDragMove(event);
 
-    const intersectedTableu = this.tableuDealer.checkIntersections(
-      this._draggedCards.cards[0]
-    ) as IntersectionResult[];
-    const intersectedFoundations = this.foundationsDealer?.checkIntersections(
-      this._draggedCards.cards[0]
-    ) as IntersectionResult[];
-    const intersectedCards = [...intersectedTableu, ...intersectedFoundations];
+    // Cache the dropped card location info before it is dropped on another location
+    const droppedCard = this._draggedCards.cards[0];
+    const originCardLocation = {
+      deck: droppedCard.location?.deck,
+      pile: droppedCard.location?.pile || 0,
+      position: droppedCard.location?.position,
+    };
 
-    // Order the intersected cards by intersection area
-    intersectedCards?.sort((a, b) => b.intersection - a.intersection);
+    // Check if the card can be dropped
+    const dropTestResult = this._sceneBuilder.dropTest(
+      this._draggedCards.cards
+    );
 
-    // Cancel if no intersected cards
-    if (!intersectedCards.length) {
+    // Cancel if drop test fails
+    if (dropTestResult === null) {
       this.onDragCancel();
       return;
     }
 
-    // Move the card to the top card of the intersected pile
-    const intCard = intersectedCards[0].card;
-    let hasHostCard2Turn = false;
-
-    // Shows the next Card into the origin pile
-    if (this._draggedCards.cards[0].location?.deck === 'tableu') {
-      // Check whether the host card actually need turning up
-      const originPile = this._draggedCards.cards[0].location?.pile || 0;
-      hasHostCard2Turn = this.tableuDealer.isTopCardUp(originPile) as boolean;
-
-      if (hasHostCard2Turn) {
-        this.tableuDealer.turnTopPileCard(
-          this._draggedCards.cards[0].location?.pile || 0
-        );
-      }
-    }
-
-    const originCardLocation = {
-      deck: this._draggedCards.cards[0].location?.deck,
-      pile: this._draggedCards.cards[0].location?.pile || 0,
-      position: this._draggedCards.cards[0].location?.position,
-    };
-
-    // Add Card into destination Dealer
-    if (intCard.location?.deck === 'tableu') {
-      this.tableuDealer.addCards(
-        this._draggedCards.cards,
-        intCard.location?.pile || 0,
-        this._draggedCards.cards.length > 1
-          ? this._draggedCards.cardsOffset
-          : undefined
-      );
-    } else {
-      this.foundationsDealer.addCards(
-        this._draggedCards.cards,
-        intCard.location?.pile || 0
-      );
-
-      Game.bus.emit(GameEvents.SUCCESS, {
-        level: this._draggedCards.cards[0].info.value,
-      });
-    }
-
-    const targetCard = this._draggedCards.cards[0];
-    const destinationCard = intCard;
-
-    // Adapt height of the origin pile
-    if (originCardLocation.deck === 'tableu') {
-      this.tableuDealer.getPile(originCardLocation.pile).adaptHeight(true);
-    }
-
     this.emit(
       'onDragEnd',
-      targetCard.info,
+      droppedCard.info,
       originCardLocation,
-      destinationCard.location,
-      hasHostCard2Turn
+      dropTestResult.destinationLocation,
+      dropTestResult.hasHostCard2Turn
+    );
+
+    Game.bus.emit(
+      GameEvents.DROP,
+      droppedCard.info,
+      originCardLocation,
+      dropTestResult.destinationLocation,
+      dropTestResult.hasHostCard2Turn
     );
 
     // Drag End
     this._draggedCards = null;
-
-    Game.bus.emit(GameEvents.DROP);
   }
 
   public onDragCancel() {
     if (!this._draggedCards) return;
 
-    const cardLocation = this._draggedCards.cards[0].location;
-    const deckName = cardLocation?.deck;
-
-    if (deckName === 'tableu') {
-      this.tableuDealer.addCards(
-        this._draggedCards.cards,
-        cardLocation?.pile || 0
-      );
-    }
-    if (deckName === 'foundation') {
-      this.foundationsDealer.addCards(
-        this._draggedCards.cards,
-        cardLocation?.pile || 0
-      );
-    }
-    if (deckName === 'waste') {
-      this.deckDealer.addCards(this._draggedCards.cards, 1);
-    }
+    // Drop the cards on the origin pile
+    this._sceneBuilder.dropCards(
+      this._draggedCards.cards,
+      this._draggedCards.cards[0].location as CardLocation
+    );
 
     this._draggedCards = null;
 
-    Game.bus.emit(GameEvents.DROP);
     this.emit('onDragCancel');
+    Game.bus.emit(GameEvents.DROP);
   }
 
-  public shuffle() {
+  public newGame() {
     if (!this._isInitialized) return;
-
+    // Reset the current game
     this.reset();
-    this.cardsDealer.shuffle();
-
-    // Deal the cards
-    this.dealCards();
+    // Deal the cards for a new game
+    this._sceneBuilder.initCards();
   }
 
-  public dealCards() {
-    for (let i = 0; i < this._config.tableuCols; i++) {
-      const cards = this.cardsDealer.getHandCards(i + 1);
-      this.tableuDealer.initDeck(cards, i);
-    }
-    const stock = this.cardsDealer.getStock();
-
-    this.deckDealer.addCards(stock);
-  }
-
-  public setCardsState({ cards }: StateRegister) {
-    // Set Stock/Waste decks
-    cards.dealer.forEach((deckInfo, deckIndex) => {
-      deckInfo.forEach((cardInfo) => {
-        const card = this.cardsDealer.getCardByInfo(cardInfo.info);
-        if (!card)
-          throw new Error(
-            'SolitaireScene::setCardsState - card retrived is null'
-          );
-        this.deckDealer.addCards([card], deckIndex);
-      });
-    });
-
-    // Set Foundations decks
-    cards.foundations.forEach((deckInfo, deckIndex) => {
-      deckInfo.forEach((cardInfo) => {
-        const card = this.cardsDealer.getCardByInfo(cardInfo.info);
-        if (!card)
-          throw new Error(
-            'SolitaireScene::setCardsState - card retrived is null'
-          );
-        card.set(cardInfo.info.way);
-        this.foundationsDealer.addCards([card], deckIndex);
-      });
-    });
-
-    //Set Tableu decks
-    cards.tableu.forEach((deckInfo, deckIndex) => {
-      deckInfo.forEach((cardInfo) => {
-        const card = this.cardsDealer.getCardByInfo(cardInfo.info);
-        if (!card)
-          throw new Error(
-            'SolitaireScene::setCardsState - card retrived is null'
-          );
-        card.set(cardInfo.info.way);
-        this.tableuDealer.addCards([card], deckIndex);
-      });
-    });
+  public setGame(state: StateRegister) {
+    this._sceneBuilder.setCards(state);
   }
 
   public async moveCards(
@@ -415,47 +209,47 @@ export class SolitaireScene extends Container {
     to: CardLocation,
     hasHostCard2Turn: boolean
   ) {
-    const fromDealer = this.getDealerByName(from.deck);
-    const toDealer = this.getDealerByName(to.deck);
-    const actionCard = fromDealer.seeCard(from.pile, from.position + 1);
-    if (!actionCard) return;
+    // Check if the destination pile exists
+    const destinationPile = this._sceneBuilder.getPileFromLocation(to);
 
-    // Get initial coords of the card
-    const coords = this.cardsDealer.getCardGlobalCoords(
-      actionCard
-    ) as PointData;
-    const cardsOffsetY = fromDealer.getPile(from.pile).currentOffset;
+    if (!destinationPile)
+      throw new Error(
+        'SceneBuilder::moveCards - No pile found for the destination location given'
+      );
 
-    // Now, actually GET all involved cards
-    const cards = fromDealer?.getDragCards(from.pile, from.position + 1);
+    const destinationDealer = this._sceneBuilder.getDealerByName(
+      to.deck
+    ) as Dealer;
 
-    // Anything?
-    if (!cards || cards.length === 0) return;
+    // Take the cards from the origin pile
+    const cards = this._sceneBuilder.takeCards(from);
+
+    //TODO - Check wWhy it was getting from + 1?
+    //const cards = fromDealer?.getDragCards(from.pile, from.position + 1);
+
+    // Check if we actually took any card
+    if (!cards.length) {
+      this.onDragCancel();
+      return;
+    }
 
     // Set cards in scene space
-    cards.forEach((card, index) => {
-      card.y = coords.y + cardsOffsetY * index;
-      card.x = coords.x;
+    const cardsOffsetY = cards.length > 1 ? cards[1].y - cards[0].y : 0;
+    cards.forEach((card) => {
       this.addChild(card);
     });
 
     // Destination Coordinates!
-    const destinationPile = toDealer.getPile(to.pile);
     const destCoords = {
-      x: destinationPile.x + toDealer.x,
+      x: destinationPile.x + destinationDealer.x,
       y:
         destinationPile.y +
-        toDealer.y +
+        destinationDealer.y +
         destinationPile.currentOffset * destinationPile.numCards,
     };
 
-    // Turn back the top card on destination pile (Tableu only)
-    if (hasHostCard2Turn && to.deck === 'tableu') {
-      const pile = toDealer.getPile(to.pile);
-      const topCard = pile.topCard();
-      // Wee need to know whether the need Flip or not
-      topCard?.animateFlip();
-    }
+    // Preparations before the undo move animation
+    this._sceneBuilder.onUndoStart(from, to, hasHostCard2Turn);
 
     // Aaaand move the card!
     const tween = gsap.to(cards[0], {
@@ -474,23 +268,11 @@ export class SolitaireScene extends Container {
     });
     await tween.play();
 
-    // Add Card into destination Dealer
-    if (to.deck === 'tableu') {
-      toDealer.addCards(
-        cards,
-        to.pile,
-        cards.length > 1 ? new Point(0, cardsOffsetY) : undefined
-      );
+    // Now drop the cards on the destination pile
+    this._sceneBuilder.dropCards(cards, to);
 
-      toDealer.getPile(to.pile).adaptHeight(true);
-    } else {
-      toDealer.addCards(cards, to.pile || 0);
-    }
-
-    // Adapt height of the source pile
-    if (from.deck === 'tableu') {
-      fromDealer.getPile(from.pile).adaptHeight(true);
-    }
+    // Preparations after the undo move animation
+    this._sceneBuilder.onUndoEnd(from, to, hasHostCard2Turn);
   }
 
   public updateSize(app: Application) {
@@ -500,12 +282,12 @@ export class SolitaireScene extends Container {
     const scaleH = app.canvas.height / this._config.frame.height;
     const scaleW = app.canvas.width / this._config.frame.width;
     this.scale.set(Math.min(scaleH, scaleW));
+
+    this._sceneBuilder.updateSize();
   }
 
   public reset() {
-    this.deckDealer.reset();
-    this.foundationsDealer.reset();
-    this.tableuDealer.reset();
+    this._sceneBuilder.reset();
   }
 
   public enable() {
