@@ -10,13 +10,55 @@ import CARD_SUITS, { Actions, Decks } from '../constants/cards';
 import { Dealer, IntersectionResult } from '../components/dealer';
 import { SceneState, StateRegister } from '../systems/stateHandler';
 import { Point, PointData } from 'pixi.js';
-import { CardLocation } from '../systems/actionsHandler';
+import { ActionRegister, CardLocation } from '../systems/actionsHandler';
 import Card from '../components/card';
 import Deck from '../components/deck';
 import { Game } from '../systems/game';
 import { GameEvents } from '../constants/gameEvents';
-import { GAME_ACTIONS_TURN_1 } from './gameActionsTurn1';
+import { GameAction } from './gameActions';
 
+/**
+ * Custom actions for "Turn 1 Solitaire Game"
+ */
+const GAME_ACTIONS_TURN_1: GameAction[] = [
+  {
+    id: 'deal',
+    callback: async (
+      actionRegister: ActionRegister,
+      sceneBuilder: SceneBuilder
+    ) => {
+      const scene = sceneBuilder as SceneBuilderTurn1;
+      if (actionRegister.undo) {
+        await scene.deckDealer.undeal();
+      } else {
+        await scene.deckDealer.deal();
+      }
+    },
+    moveAdd: 1,
+    passthrusAdd: 0,
+  },
+  {
+    id: 'redeal',
+    callback: async (
+      actionRegister: ActionRegister,
+      sceneBuilder: SceneBuilder
+    ) => {
+      const scene = sceneBuilder as SceneBuilderTurn1;
+
+      if (actionRegister.undo) {
+        await scene.deckDealer.unredeal();
+      } else {
+        await scene.deckDealer.redeal();
+      }
+    },
+    moveAdd: 1,
+    passthrusAdd: 1,
+  },
+];
+
+/**
+ * Scene Builder for "Turn 1 Solitaire Game"
+ */
 export class SceneBuilderTurn1 extends SceneBuilder {
   private _config = {
     backTexture: 'back_red.png',
@@ -223,13 +265,16 @@ export class SceneBuilderTurn1 extends SceneBuilder {
 
     // Find the cards & remove from the origin pile
     const dealer = this.getDealerByName(deckName);
+    const topCard = dealer
+      .getPile(cardLocation.pile)
+      .seeCard(cardLocation.position) as Card;
+    const coords = this.cardsDealer.getCardGlobalCoords(topCard) as PointData;
     const pileOffset = dealer.getPile(cardLocation.pile).currentOffset;
     const cards = dealer.getDragCards(cardLocation.pile, cardLocation.position);
 
     if (!cards.length) return [];
 
     // Set the card with global coords
-    const coords = this.cardsDealer.getCardGlobalCoords(cards[0]) as PointData;
     cards.forEach((card, index) => {
       card.y = coords.y + pileOffset * index;
       card.x = coords.x;
