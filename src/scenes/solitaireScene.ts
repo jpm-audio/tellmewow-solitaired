@@ -41,7 +41,7 @@ export class SolitaireScene extends Container {
   }
 
   public get stock() {
-    return this._sceneBuilder.getStock();
+    return this._sceneBuilder.stock;
   }
 
   public async init(sceneBuilder: SceneBuilder) {
@@ -219,9 +219,6 @@ export class SolitaireScene extends Container {
     // Take the cards from the origin pile
     const cards = this._sceneBuilder.takeCards(from);
 
-    //TODO - Check wWhy it was getting from + 1?
-    //const cards = fromDealer?.getDragCards(from.pile, from.position + 1);
-
     // Check if we actually took any card
     if (!cards.length) {
       this.onDragCancel();
@@ -244,6 +241,7 @@ export class SolitaireScene extends Container {
     };
 
     // Preparations before the undo move animation
+    Game.bus.emit(GameEvents.TOUCH, this._draggedCards);
     this._sceneBuilder.onUndoStart(from, to, hasHostCard2Turn);
 
     // Aaaand move the card!
@@ -267,6 +265,7 @@ export class SolitaireScene extends Container {
     this._sceneBuilder.dropCards(cards, to);
 
     // Preparations after the undo move animation
+    Game.bus.emit(GameEvents.DROP, cards[0].info, from, to, hasHostCard2Turn);
     this._sceneBuilder.onUndoEnd(from, to, hasHostCard2Turn);
   }
 

@@ -52,9 +52,9 @@ export class AudioController {
     Game.bus.on(GameEvents.DROP, () => this.play('card-drop'));
     Game.bus.on(GameEvents.SUCCESS, (info: SuccessEventInfo) => {
       if (info.level === 1) {
-        this.play('card-great');
+        this.play('card-success-big');
       } else {
-        this.play('card-nice');
+        this.play('card-success');
       }
     });
   }
