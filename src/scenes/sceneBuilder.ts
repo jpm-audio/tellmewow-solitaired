@@ -57,7 +57,7 @@ export default class SceneBuilder {
    *
    * @returns
    */
-  public getStock(): number {
+  public get stock(): number {
     return 0;
   }
   /**
