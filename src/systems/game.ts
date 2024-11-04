@@ -76,6 +76,8 @@ export class Game extends EventEmitter {
     const sceneBuilder = new SceneBuilderTurn1();
     await this._scene.init(sceneBuilder);
     this._initActions(sceneBuilder);
+    // TODO - When changing game type, reset the actions
+    // this._actionsHandler.reset();
 
     // Resize Handling
     this._handleResize();
@@ -97,8 +99,6 @@ export class Game extends EventEmitter {
   }
 
   private _initActions(sceneBuilder: SceneBuilder) {
-    this._actionsHandler.reset();
-
     // SUBSCRIBE SPECIFIC ACTIONS FROM SCENE BUILDER
     sceneBuilder.gameActions.forEach((gameAction: GameAction) => {
       this._actionsHandler.subscribeAction({
@@ -121,9 +121,13 @@ export class Game extends EventEmitter {
       id: 'move',
       callback: async (actionRegister: ActionRegister) => {
         if (actionRegister.undo) {
+          // Inverse from & to for undoing action
+          //!\\ undoFrom need "position + 1" to refer to the card that was set with the action.
+          const undoFrom = actionRegister.to as CardLocation;
+          const undoTo = actionRegister.from as CardLocation;
           await this._scene.moveCards(
-            actionRegister.to as CardLocation,
-            actionRegister.from as CardLocation,
+            { ...undoFrom, position: undoFrom.position + 1 },
+            undoTo,
             actionRegister.hostCard?.turn as boolean
           );
         }
@@ -261,7 +265,7 @@ export class Game extends EventEmitter {
     this._app = pixiApp;
 
     // Init Actions
-    this._actionsHandler = new ActionsHandler('moves').init();
+    this._actionsHandler = new ActionsHandler('actions').init();
     Game.bus.on(GameEvents.ACTION, this._onAction, this);
     // Init State
     this._initState();
