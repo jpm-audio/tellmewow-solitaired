@@ -4,7 +4,6 @@ import {
   FederatedPointerEvent,
   Graphics,
   Point,
-  PointData,
   Rectangle,
 } from 'pixi.js';
 import Card from '../components/card';
@@ -18,8 +17,8 @@ import SceneBuilder from './sceneBuilder';
 
 interface DragggingCards {
   cards: Card[];
-  cardOrigins: PointData[];
-  clientOrigin: PointData;
+  cardOrigins: Point[];
+  clientOrigin: Point;
 }
 
 export class SolitaireScene extends Container {
@@ -43,10 +42,6 @@ export class SolitaireScene extends Container {
 
   public get stock() {
     return this._sceneBuilder.getStock();
-  }
-
-  constructor() {
-    super();
   }
 
   public async init(sceneBuilder: SceneBuilder) {
@@ -92,16 +87,16 @@ export class SolitaireScene extends Container {
 
     // Check if we actually took any card
     if (!cards.length) {
-      this.onDragCancel();
       return;
     }
 
     // Prepare the drag info
     this._draggedCards = {
-      cards: [],
+      cards: cards,
       cardOrigins: [],
       clientOrigin: new Point(),
     };
+    this._draggedCards.clientOrigin.copyFrom(event.getLocalPosition(this));
 
     // Prepare the cards at the origin position
     cards.forEach((card) => {
