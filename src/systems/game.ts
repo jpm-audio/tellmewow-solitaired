@@ -146,7 +146,7 @@ export class Game extends EventEmitter {
     this._scene.on('onDragStart', this._onPlayerPlaying, this);
     this._scene.on('onDragEnd', this._onPlayerEndMove, this);
     this._stateHandler.on('stateChange', this.onStatsChange, this);
-    Game.bus.on(GameEvents.WIN, this._winGame, this);
+    Game.bus.on(GameEvents.WIN, this._onWinGame, this);
 
     // Buttons
     if (!this._htmlUIController.buttons) return;
@@ -213,47 +213,46 @@ export class Game extends EventEmitter {
     // Update Timer
     this._timer.time = elapsedTime;
 
-    // Update Stats
-    this._stats.moves = currentState.stats.moves;
-    this._stats.stock = currentState.stats.stock;
-    this._stats.passthrus = currentState.stats.passthrus;
-    this.onStatsChange();
-
     // Set the game state
     this._scene.setGame(currentState);
+
+    // Update Stats
+    this._stats.moves = currentState.stats.moves;
+    this._stats.stock = this._scene.stock;
+    this._stats.passthrus = currentState.stats.passthrus;
+    this.onStatsChange();
   }
 
   private _newGame() {
     if (!this._scene) return;
     this.disable();
-    this._timer.stop();
-    this._timer.reset();
-    this._stats.moves = 0;
-    this._stats.stock = 0;
-    this._stats.passthrus = 0;
+    this._reset();
     this._scene.newGame();
     this.updateGameState();
     this._stateHandler.saveInitalState();
-    this._actionsHandler.reset();
     this.enable();
   }
 
   private _restartGame() {
     if (!this._scene) return;
     this.disable();
+    this._reset();
+    this._scene.reset();
+    this._stateHandler.loadInitialState();
+    this._setGameFromState();
+    this.enable();
+  }
+
+  private _reset() {
     this._timer.stop();
     this._timer.reset();
     this._stats.moves = 0;
     this._stats.stock = 0;
     this._stats.passthrus = 0;
-    this._scene.reset();
-    this._stateHandler.loadInitialState();
-    this._setGameFromState();
     this._actionsHandler.reset();
-    this.enable();
   }
 
-  private _winGame() {
+  private _onWinGame() {
     this.disable();
     this._htmlUIController.openWinOverlay();
   }
