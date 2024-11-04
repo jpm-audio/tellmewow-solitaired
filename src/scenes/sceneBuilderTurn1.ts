@@ -42,19 +42,16 @@ export class SceneBuilderTurn1 extends SceneBuilder {
   }
 
   private _getDeckBase(variant: number = 0) {
-    return DeckBase.base(
-      variant,
-      this._config.card.width,
-      this._config.card.height
-    );
+    const card = this.cardsDealer.getCardByIndex(0) as Card;
+    return DeckBase.base(variant, card.width, card.height);
   }
 
   public create({ scene, frame }: SceneBuilderCreateInfo) {
     this._createCardsDealer(CARD_SUITS);
-
+    const card = this.cardsDealer.getCardByIndex(0) as Card;
     const gap = this._config.decksGap;
-    const cardHeight = this._config.card.height;
-    const cardWidth = this._config.card.width;
+    const cardHeight = card.height;
+    const cardWidth = card.width;
 
     // Deck Dealer
     this.deckDealer = new DeckDealer({
