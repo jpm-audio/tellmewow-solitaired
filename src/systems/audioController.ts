@@ -31,7 +31,6 @@ export class AudioController {
             url: parsedSpriteUrls,
             preload: true,
             loaded: (err, sound) => {
-              console.log(err, sound);
               if (err) reject(err);
               else resolve(sound);
             },

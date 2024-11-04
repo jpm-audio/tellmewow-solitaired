@@ -5,7 +5,7 @@ export default class AudioAdapter {
     return sound.add(map);
   }
 
-  public play(alias: string, spriteName: string) {
-    return sound.play(alias, spriteName);
+  public async play(alias: string, spriteName: string) {
+    return sound.play(alias, { sprite: spriteName });
   }
 }
