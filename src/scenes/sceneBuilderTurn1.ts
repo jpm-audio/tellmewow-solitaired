@@ -181,6 +181,10 @@ export class SceneBuilderTurn1 extends SceneBuilder {
           };
       Game.bus.emit(GameEvents.ACTION, actionInfo);
     });
+
+    Game.bus.on(GameEvents.DROP, (cardInfo, location: CardLocation) => {
+      this.onPileChanged(location);
+    });
   }
 
   public getInfo(): SceneState {
@@ -283,6 +287,13 @@ export class SceneBuilderTurn1 extends SceneBuilder {
     return cards;
   }
 
+  public onPileChanged(location: CardLocation) {
+    if (location && location.deck === 'tableu') {
+      const pile = this.getPileFromLocation(location) as Deck;
+      pile.adaptHeight(true);
+    }
+  }
+
   public onUndoStart(
     fromLocation: CardLocation,
     toLocation: CardLocation,
@@ -296,14 +307,6 @@ export class SceneBuilderTurn1 extends SceneBuilder {
       return true;
     }
 
-    return false;
-  }
-
-  public onUndoEnd(fromLocation: CardLocation): boolean {
-    if (fromLocation.deck === 'tableu') {
-      const pile = this.getPileFromLocation(fromLocation) as Deck;
-      pile.adaptHeight(true);
-    }
     return false;
   }
 
@@ -363,7 +366,9 @@ export class SceneBuilderTurn1 extends SceneBuilder {
       return true;
     }
     if (deckName === 'foundation') {
+      const deck = this.foundationsDealer.getPile(location.pile);
       this.foundationsDealer.addCards(cards, location.pile || 0);
+      Game.bus.emit(GameEvents.SUCCESS, { level: deck.numCards });
       this.winTest();
       return true;
     }
